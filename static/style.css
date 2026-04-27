@@ -1,0 +1,203 @@
+:root {
+    --bg-dark: #0f172a;
+    --card-bg: #1e293b;
+    --accent: #10b981;
+    --text-main: #f8fafc;
+    --text-dim: #94a3b8;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+}
+
+.container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+nav {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-bottom: 1px solid #334155;
+}
+
+.logo { font-weight: 800; color: var(--accent); font-size: 1.2rem; }
+
+.page-header { margin-bottom: 3rem; text-align: left; }
+h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.subtitle { color: var(--text-dim); }
+
+.match-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* LE REGLAGE 16PX */
+.match-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid #334155;
+    transition: all 0.3s ease;
+}
+
+.match-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+}
+
+.league-tag {
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+}
+
+.match-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40%;
+    text-align: center;
+}
+
+.team img { width: 48px; height: 48px; margin-bottom: 0.5rem; }
+.team span { font-size: 0.9rem; font-weight: 500; }
+
+.score-area { text-align: center; }
+.vs { display: block; font-weight: 800; color: var(--text-dim); font-size: 0.8rem; }
+.time { font-size: 0.8rem; color: var(--accent); }
+/* --- AJOUTS POUR LE MENU ET LES FILTRES --- */
+
+/* Alignement du menu à droite dans la nav */
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.nav-item.active, .nav-item:hover {
+    color: var(--accent);
+}
+
+/* Style de la barre de filtres (championnats) */
+.league-filter-container {
+    margin: 20px 0 30px 0;
+}
+
+.league-filter-bar {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto; /* Permet de scroller sur mobile */
+    padding-bottom: 5px;
+}
+
+/* Design des boutons "capsule" */
+.filter-btn {
+    background: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid #334155;
+    padding: 8px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    transition: 0.3s;
+}
+
+.filter-btn.active, .filter-btn:hover {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+/* --- DESIGN DE LA PAGE MATCH --- */
+
+/* Carte principale (Hero) */
+.match-hero-card {
+    background: var(--card-bg);
+    border: 1px solid #334155;
+    border-radius: 20px;
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.hero-team { text-align: center; flex: 1; }
+.hero-team img { width: 80px; height: 80px; margin-bottom: 1rem; }
+.hero-team h2 { font-size: 1.2rem; margin: 0; color: var(--text-main); }
+
+.hero-score { text-align: center; flex: 1; }
+.big-score { font-size: 3.5rem; font-weight: 900; color: var(--accent); }
+.big-vs { font-size: 2rem; font-weight: 800; color: var(--text-dim); }
+.live-status { background: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+
+/* Grid des détails */
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr; /* Colonne de gauche plus étroite que le radar */
+    gap: 1.5rem;
+}
+
+.info-card {
+    background: var(--card-bg);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-card h3 { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 1.2rem; }
+
+/* Cotes */
+.odds-flex { display: flex; gap: 10px; }
+.odd { background: var(--bg-dark); flex: 1; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #334155; }
+.odd span { font-size: 0.7rem; color: var(--text-dim); display: block; }
+.odd strong { font-size: 1.3rem; color: var(--accent); }
+
+/* Jauges de confiance */
+.trust-row { display: flex; align-items: center; margin-bottom: 15px; font-size: 0.8rem; }
+.team-name { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar-container { flex: 1; background: var(--bg-dark); height: 10px; border-radius: 5px; margin: 0 12px; }
+.bar { height: 100%; border-radius: 5px; transition: width 0.5s ease-in-out; }
+.bar.home { background: var(--accent); }
+.bar.away { background: #3b82f6; }
+
+/* Forme (W-D-L) */
+.form-row { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
+.badge-f { width: 20px; height: 20px; line-height: 20px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-align: center; }
+.f-W { background: var(--accent); color: var(--bg-dark); }
+.f-D { background: var(--text-dim); color: white; }
+.f-L { background: #ef4444; color: white; }
+
+.back-link { color: var(--accent); text-decoration: none; font-size: 0.9rem; margin-top: 1rem; display: inline-block; }
+
+/* Mobile */
+@media (max-width: 768px) {
+    .match-hero-card { flex-direction: column; gap: 1.5rem; }
+    .details-grid { grid-template-columns: 1fr; }
+}

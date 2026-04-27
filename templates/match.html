@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ fixture.teams.home.name }} vs {{ fixture.teams.away.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-content">
+            <span class="logo">⚽ SoccerVisualizer</span>
+            <div class="nav-links">
+                 <a href="/" class="nav-item">Home</a>
+                 <a href="#" class="nav-item active">Matchs</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="match-hero-card">
+            <div class="hero-team">
+                <img src="{{ fixture.teams.home.logo }}" alt="{{ fixture.teams.home.name }}">
+                <h2>{{ fixture.teams.home.name }}</h2>
+                <div class="form-row">
+                    {% for r in home_forme %}
+                    <span class="badge-f f-{{ r }}">{{ r }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="hero-score">
+                <p class="league-detail">{{ fixture.league.name }}</p>
+                {% if fixture.goals.home is not none %}
+                    <div class="big-score">{{ fixture.goals.home }} - {{ fixture.goals.away }}</div>
+                    <span class="live-status">{{ status }}</span>
+                {% else %}
+                    <div class="big-vs">VS</div>
+                    <div class="match-date-time">{{ fixture.fixture.date[11:16] }}</div>
+                {% endif %}
+                <p class="stadium">🏟 {{ fixture.fixture.venue.name }}</p>
+            </div>
+
+            <div class="hero-team">
+                <img src="{{ fixture.teams.away.logo }}" alt="{{ fixture.teams.away.name }}">
+                <h2>{{ fixture.teams.away.name }}</h2>
+                <div class="form-row">
+                    {% for r in away_forme %}
+                    <span class="badge-f f-{{ r }}">{{ r }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <div class="details-grid">
+            <div class="details-column">
+                <div class="info-card">
+                    <h3>💰 Cotes 1N2</h3>
+                    <div class="odds-flex">
+                        <div class="odd"><span>1</span><strong>{{ cotes.home }}</strong></div>
+                        <div class="odd"><span>N</span><strong>{{ cotes.draw }}</strong></div>
+                        <div class="odd"><span>2</span><strong>{{ cotes.away }}</strong></div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3>🎯 Indice de Confiance</h3>
+                    <div class="trust-row">
+                        <span class="team-name">{{ fixture.teams.home.name }}</span>
+                        <div class="bar-container">
+                            <div class="bar home" style="width: {{ home_indice }}%"></div>
+                        </div>
+                        <span class="val">{{ home_indice }}%</span>
+                    </div>
+                    <div class="trust-row">
+                        <span class="team-name">{{ fixture.teams.away.name }}</span>
+                        <div class="bar-container">
+                            <div class="bar away" style="width: {{ away_indice }}%"></div>
+                        </div>
+                        <span class="val">{{ away_indice }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="details-column">
+                <div class="info-card">
+                    <h3>📊 Radar de Performance</h3>
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <a href="/" class="back-link">← Revenir à la liste</a>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Attaque', 'Défense', 'Possession', 'Forme', 'Historique'],
+                datasets: [{
+                    label: '{{ fixture.teams.home.name }}',
+                    data: [80, 70, 65, 90, 60],
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                    borderColor: '#10b981',
+                    borderWidth: 2
+                }, {
+                    label: '{{ fixture.teams.away.name }}',
+                    data: [60, 85, 55, 40, 70],
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: { 
+                    r: { 
+                        grid: { color: '#334155' }, 
+                        pointLabels: { color: '#f8fafc' }, 
+                        ticks: { display: false } 
+                    } 
+                },
+                plugins: { legend: { labels: { color: '#f8fafc' } } }
+            }
+        });
+    </script>
+</body>
+</html>
