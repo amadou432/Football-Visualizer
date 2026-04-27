@@ -11,11 +11,11 @@ HEADERS = {
 
 @app.route('/')
 def home():
-    # Testez avec une date où des matchs ont eu lieu (ex: 2024-04-24)
+   
     url = "https://v3.football.api-sports.io/fixtures?date=2024-04-24"
     response = requests.get(url, headers=HEADERS).json()
     
-    # Ajoutez ceci pour voir l'erreur exacte dans votre terminal VS Code
+ 
     print("DEBUG API:", response) 
     
     matches_list = response.get('response', [])
