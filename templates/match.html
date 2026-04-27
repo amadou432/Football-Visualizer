@@ -1,131 +1,294 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ fixture.teams.home.name }} vs {{ fixture.teams.away.name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='Style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>{{ fixture.teams.home.name }} vs {{ fixture.teams.away.name }}</title>
 </head>
+
 <body>
 
     <nav>
         <div class="nav-content">
-            <span class="logo">⚽ SoccerVisualizer</span>
+            <a href="/" class="logo">⚽ SoccerVisualizer</a>
             <div class="nav-links">
-                 <a href="/" class="nav-item">Home</a>
-                 <a href="#" class="nav-item active">Matchs</a>
+                <a href="/">Home</a>
+                <a href="#" class="nav-active">Match</a>
             </div>
         </div>
     </nav>
 
     <main class="container">
-        <section class="match-hero-card">
-            <div class="hero-team">
+
+        <!-- SCOREBOARD -->
+        <section class="scoreboard">
+            <div class="team-hero">
                 <img src="{{ fixture.teams.home.logo }}" alt="{{ fixture.teams.home.name }}">
                 <h2>{{ fixture.teams.home.name }}</h2>
-                <div class="form-row">
-                    {% for r in home_forme %}
-                    <span class="badge-f f-{{ r }}">{{ r }}</span>
-                    {% endfor %}
+                <div class="forme-row">
+                    {% for r in home_forme %}<span class="forme-badge forme-{{ r }}">{{ r }}</span>{% endfor %}
                 </div>
             </div>
 
-            <div class="hero-score">
-                <p class="league-detail">{{ fixture.league.name }}</p>
+            <div class="score-center">
                 {% if fixture.goals.home is not none %}
-                    <div class="big-score">{{ fixture.goals.home }} - {{ fixture.goals.away }}</div>
-                    <span class="live-status">{{ status }}</span>
+                <div class="live-score">{{ fixture.goals.home }} - {{ fixture.goals.away }}</div>
+                <span class="live-badge">{{ status }}</span>
                 {% else %}
-                    <div class="big-vs">VS</div>
-                    <div class="match-date-time">{{ fixture.fixture.date[11:16] }}</div>
+                <div class="vs-big">VS</div>
+                <div class="match-datetime">
+                    {{ fixture.fixture.date[8:10] }}/{{ fixture.fixture.date[5:7] }}/{{ fixture.fixture.date[:4] }}
+                    &nbsp;•&nbsp; {{ fixture.fixture.date[11:16] }}
+                </div>
                 {% endif %}
-                <p class="stadium">🏟 {{ fixture.fixture.venue.name }}</p>
+                <div class="stadium-info">🏟 {{ fixture.fixture.venue.name }}, {{ fixture.fixture.venue.city }}</div>
+                <div class="league-badge">{{ fixture.league.name }} — {{ fixture.league.country }}</div>
             </div>
 
-            <div class="hero-team">
+            <div class="team-hero">
                 <img src="{{ fixture.teams.away.logo }}" alt="{{ fixture.teams.away.name }}">
                 <h2>{{ fixture.teams.away.name }}</h2>
-                <div class="form-row">
-                    {% for r in away_forme %}
-                    <span class="badge-f f-{{ r }}">{{ r }}</span>
-                    {% endfor %}
+                <div class="forme-row">
+                    {% for r in away_forme %}<span class="forme-badge forme-{{ r }}">{{ r }}</span>{% endfor %}
                 </div>
             </div>
         </section>
 
-        <div class="details-grid">
-            <div class="details-column">
-                <div class="info-card">
-                    <h3>💰 Cotes 1N2</h3>
-                    <div class="odds-flex">
-                        <div class="odd"><span>1</span><strong>{{ cotes.home }}</strong></div>
-                        <div class="odd"><span>N</span><strong>{{ cotes.draw }}</strong></div>
-                        <div class="odd"><span>2</span><strong>{{ cotes.away }}</strong></div>
+        <!-- COTES -->
+        <section class="section-block">
+            <h3 class="section-title">💰 Cotes</h3>
+            <div class="cotes-grid">
+                <div class="cote-box">
+                    <span class="cote-label">1 — {{ fixture.teams.home.name }}</span>
+                    <span class="cote-val">{{ cotes.home or '—' }}</span>
+                </div>
+                <div class="cote-box">
+                    <span class="cote-label">X — Nul</span>
+                    <span class="cote-val">{{ cotes.draw or '—' }}</span>
+                </div>
+                <div class="cote-box">
+                    <span class="cote-label">2 — {{ fixture.teams.away.name }}</span>
+                    <span class="cote-val">{{ cotes.away or '—' }}</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- INDICE DE CONFIANCE -->
+        <section class="section-block">
+            <h3 class="section-title">🎯 Indice de confiance</h3>
+            <div class="indice-grid">
+                <div class="indice-team">
+                    <img src="{{ fixture.teams.home.logo }}" style="width:32px;vertical-align:middle;">
+                    <span>{{ fixture.teams.home.name }}</span>
+                    <div class="indice-bar-wrap">
+                        <div class="indice-bar" style="width:{{ home_indice }}%"></div>
+                    </div>
+                    <span class="indice-val">{{ home_indice }}/100</span>
+                </div>
+                <div class="indice-team" style="margin-top:0.75rem;">
+                    <img src="{{ fixture.teams.away.logo }}" style="width:32px;vertical-align:middle;">
+                    <span>{{ fixture.teams.away.name }}</span>
+                    <div class="indice-bar-wrap">
+                        <div class="indice-bar indice-bar-away" style="width:{{ away_indice }}%"></div>
+                    </div>
+                    <span class="indice-val">{{ away_indice }}/100</span>
+                </div>
+            </div>
+            <p class="indice-note">Calculé à partir de la forme récente (5 matchs), des buts moyens et des cotes.</p>
+        </section>
+
+        <!-- STATS SAISON -->
+        {% if home_season %}
+        <section class="section-block">
+            <h3 class="section-title">📊 Statistiques de la saison</h3>
+
+            <!-- Légende -->
+            <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:0.85rem;">
+                <span style="color:#10b981;font-weight:700;">⬤ {{ fixture.teams.home.name }}</span>
+                <span style="color:#3b82f6;font-weight:700;">⬤ {{ fixture.teams.away.name }}</span>
+            </div>
+
+            <div class="season-grid">
+                <div class="season-stat-card">
+                    <span class="ss-label">Buts marqués / match</span>
+                    <div class="ss-compare">
+                        <span class="ss-home">{{ home_season.goals.for.average.total or '?' }}</span>
+                        <span class="ss-sep">vs</span>
+                        <span class="ss-away">{{ away_season.goals.for.average.total or '?' }}</span>
                     </div>
                 </div>
-
-                <div class="info-card">
-                    <h3>🎯 Indice de Confiance</h3>
-                    <div class="trust-row">
-                        <span class="team-name">{{ fixture.teams.home.name }}</span>
-                        <div class="bar-container">
-                            <div class="bar home" style="width: {{ home_indice }}%"></div>
-                        </div>
-                        <span class="val">{{ home_indice }}%</span>
+                <div class="season-stat-card">
+                    <span class="ss-label">Buts encaissés / match</span>
+                    <div class="ss-compare">
+                        <span class="ss-home">{{ home_season.goals.against.average.total or '?' }}</span>
+                        <span class="ss-sep">vs</span>
+                        <span class="ss-away">{{ away_season.goals.against.average.total or '?' }}</span>
                     </div>
-                    <div class="trust-row">
-                        <span class="team-name">{{ fixture.teams.away.name }}</span>
-                        <div class="bar-container">
-                            <div class="bar away" style="width: {{ away_indice }}%"></div>
-                        </div>
-                        <span class="val">{{ away_indice }}%</span>
+                </div>
+                <div class="season-stat-card">
+                    <span class="ss-label">Victoires</span>
+                    <div class="ss-compare">
+                        <span class="ss-home">{{ home_season.fixtures.wins.total or '?' }}</span>
+                        <span class="ss-sep">vs</span>
+                        <span class="ss-away">{{ away_season.fixtures.wins.total or '?' }}</span>
+                    </div>
+                </div>
+                <div class="season-stat-card">
+                    <span class="ss-label">Nuls</span>
+                    <div class="ss-compare">
+                        <span class="ss-home">{{ home_season.fixtures.draws.total or '?' }}</span>
+                        <span class="ss-sep">vs</span>
+                        <span class="ss-away">{{ away_season.fixtures.draws.total or '?' }}</span>
+                    </div>
+                </div>
+                <div class="season-stat-card">
+                    <span class="ss-label">Défaites</span>
+                    <div class="ss-compare">
+                        <span class="ss-home">{{ home_season.fixtures.loses.total or '?' }}</span>
+                        <span class="ss-sep">vs</span>
+                        <span class="ss-away">{{ away_season.fixtures.loses.total or '?' }}</span>
+                    </div>
+                </div>
+                <div class="season-stat-card">
+                    <span class="ss-label">Matchs joués</span>
+                    <div class="ss-compare">
+                        <span class="ss-home">{{ home_season.fixtures.played.total or '?' }}</span>
+                        <span class="ss-sep">vs</span>
+                        <span class="ss-away">{{ away_season.fixtures.played.total or '?' }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="details-column">
-                <div class="info-card">
-                    <h3>📊 Radar de Performance</h3>
-                    <canvas id="radarChart"></canvas>
-                </div>
+            <div class="chart-wrap" style="max-width:420px;margin:2rem auto 0;">
+                <canvas id="radarSaison"></canvas>
             </div>
-        </div>
-
-        <a href="/" class="back-link">← Revenir à la liste</a>
-    </main>
-
-    <script>
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['Attaque', 'Défense', 'Possession', 'Forme', 'Historique'],
-                datasets: [{
-                    label: '{{ fixture.teams.home.name }}',
-                    data: [80, 70, 65, 90, 60],
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                    borderColor: '#10b981',
-                    borderWidth: 2
+            <script>
+                new Chart(document.getElementById('radarSaison'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['Buts marqués', 'Buts enc.', 'Victoires', 'Nuls', 'Défaites'],
+                        datasets: [{
+                            label: '{{ fixture.teams.home.name }}',
+                            data: [
+                                {{ home_season.goals.for.average.total or 0 }},
+                        {{ home_season.goals.against.average.total or 0 }},
+                        {{ home_season.fixtures.wins.total or 0 }},
+                    {{ home_season.fixtures.draws.total or 0 }},
+                    {{ home_season.fixtures.loses.total or 0 }}
+                    ],
+                    backgroundColor: 'rgba(16,185,129,0.2)', borderColor: '#10b981', pointBackgroundColor: '#10b981'
                 }, {
-                    label: '{{ fixture.teams.away.name }}',
-                    data: [60, 85, 55, 40, 70],
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderColor: '#3b82f6',
-                    borderWidth: 2
+                        label: '{{ fixture.teams.away.name }}',
+                        data: [
+                            {{ away_season.goals.for.average.total or 0 }},
+                    {{ away_season.goals.against.average.total or 0 }},
+                    {{ away_season.fixtures.wins.total or 0 }},
+                    {{ away_season.fixtures.draws.total or 0 }},
+                    {{ away_season.fixtures.loses.total or 0 }}
+                    ],
+                    backgroundColor: 'rgba(59,130,246,0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6'
                 }]
             },
-            options: {
-                scales: { 
-                    r: { 
-                        grid: { color: '#334155' }, 
-                        pointLabels: { color: '#f8fafc' }, 
-                        ticks: { display: false } 
-                    } 
-                },
-                plugins: { legend: { labels: { color: '#f8fafc' } } }
-            }
+                    options: {
+                    scales: { r: { ticks: { color: '#94a3b8', backdropColor: 'transparent' }, grid: { color: '#334155' }, pointLabels: { color: '#f8fafc', font: { size: 12 } } } },
+                    plugins: { legend: { labels: { color: '#f8fafc' } } }
+                }
         });
-    </script>
+            </script>
+        </section>
+        {% endif %}
+
+        <!-- STATS LIVE (match en cours/terminé) -->
+        {% if live_stats %}
+        {% set hs = live_stats.get(fixture.teams.home.name, {}) %}
+        {% set as_ = live_stats.get(fixture.teams.away.name, {}) %}
+        <section class="section-block">
+            <h3 class="section-title">⚡ Stats en direct</h3>
+            <div class="stats-grid">
+                {% for label, hv, av, is_pct in [
+                ('Possession', hs.get('Ball Possession','0%'), as_.get('Ball Possession','0%'), True),
+                ('Tirs totaux', hs.get('Total Shots',0), as_.get('Total Shots',0), False),
+                ('Tirs cadrés', hs.get('Shots on Goal',0), as_.get('Shots on Goal',0), False),
+                ('Corners', hs.get('Corner Kicks',0), as_.get('Corner Kicks',0), False),
+                ('Fautes', hs.get('Fouls',0), as_.get('Fouls',0), False)
+                ] %}
+                <div class="stat-bar-block">
+                    <div class="stat-label">
+                        <span class="stat-val-home">{{ hv }}</span>
+                        <span class="stat-name">{{ label }}</span>
+                        <span class="stat-val-away">{{ av }}</span>
+                    </div>
+                    <div class="dual-bar">
+                        {% if is_pct %}
+                        <div class="bar-home" style="width:{{ hv }}"></div>
+                        <div class="bar-away" style="width:{{ av }}"></div>
+                        {% else %}
+                        {% set total = (hv|int)+(av|int) %}
+                        <div class="bar-home"
+                            style="width:{% if total>0 %}{{ ((hv|int)/total*100)|int }}%{% else %}50%{% endif %}"></div>
+                        <div class="bar-away"
+                            style="width:{% if total>0 %}{{ ((av|int)/total*100)|int }}%{% else %}50%{% endif %}"></div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- ÉVÉNEMENTS -->
+        {% if events %}
+        <section class="section-block">
+            <h3 class="section-title">⚽ Événements</h3>
+            <div class="events-list">
+                {% for e in events %}
+                <div
+                    class="event-item {% if e.team.name == fixture.teams.home.name %}event-home{% else %}event-away{% endif %}">
+                    <span class="event-minute">{{ e.time.elapsed }}'</span>
+                    <span>{% if e.type=='Goal' %}⚽{% elif e.type=='Card' and e.detail=='Yellow Card' %}🟨{% elif
+                        e.type=='Card' and e.detail=='Red Card' %}🟥{% else %}🔄{% endif %}</span>
+                    <span class="event-player">{{ e.player.name }}</span>
+                    <span class="event-detail">{{ e.detail }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- COMPOSITIONS -->
+        {% if lineups %}
+        <section class="section-block">
+            <h3 class="section-title">🧩 Compositions</h3>
+            <div class="lineups-grid">
+                {% for team_lineup in lineups %}
+                <div class="lineup-card">
+                    <div class="lineup-header">
+                        <img src="{{ team_lineup.team.logo }}" style="width:32px;">
+                        <strong>{{ team_lineup.team.name }}</strong>
+                        <span class="formation-badge">{{ team_lineup.formation }}</span>
+                    </div>
+                    <ul class="player-list">
+                        {% for p in team_lineup.startXI %}
+                        <li>
+                            <span class="shirt-number">{{ p.player.number }}</span>
+                            {{ p.player.name }}
+                            {% if p.player.pos %}<span class="pos-badge pos-{{ p.player.pos }}">{{ p.player.pos
+                                }}</span>{% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <a href="/" class="back-btn">← Retour aux matchs</a>
+
+    </main>
 </body>
+
 </html>

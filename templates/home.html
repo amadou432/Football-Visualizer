@@ -1,34 +1,19 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <title>Football Live Tracker</title>
 </head>
+
 <body>
     <nav>
         <div class="nav-content">
-            <span class="logo">⚽ SoccerVisualizer</span>
-        
-            <div class="nav-links">
-                 <a href="/" class="nav-item active">Home</a>
-                 <a href="#" class="nav-item">Matchs</a>
-            </div>
+            <span class="logo">⚽ FoodVisualizer</span>
         </div>
     </nav>
-    <br>
-    <div class="league-filter-container">
-        <div class="league-filter-bar">
-             <button class="filter-btn active">All</button>
-             <button class="filter-btn">Premier League</button>
-              <button class="filter-btn">Ligue 1</button>
-             <button class="filter-btn">La Liga</button>
-             <button class="filter-btn">Serie A</button>
-             <button class="filter-btn">Bundesliga</button>
-        </div>
-        <br>
-    </div>
 
     <main class="container">
         <header class="page-header">
@@ -36,36 +21,36 @@
             <p class="subtitle">Directement depuis l'API Football</p>
         </header>
 
-    <div class="match-grid">
-        {% for m in matchs %}
-            <a href="/match/{{ m.fixture.id }}" style="text-decoration: none; color: inherit;">
-                <div class="match-card">
-                     <div class="league-tag">{{ m.league.name }}</div>
-                
-                     <div class="match-content">
-                          <div class="team">
-                              <img src="{{ m.teams.home.logo }}" alt="Home Team">
-                              <span>{{ m.teams.home.name }}</span>
-                          </div>
-                    
-                          <div class="score-area">
-                              <span class="vs">VS</span>
-                              <span class="time">{{ m.fixture.date[11:16] }}</span>
-                          </div>
-                    
-                          <div class="team">
-                              <img src="{{ m.teams.away.logo }}" alt="Away Team">
-                              <span>{{ m.teams.away.name }}</span>
-                          </div>
-                     </div>
-               </div>
+        <div class="match-grid">
+            {% for m in matchs %}
+            <a href="/match/{{ m.fixture.id }}" class="match-card"> <!-- Mon propre modification -->
+
+                <div class="league-tag">{{ m.league.name }}</div>
+
+                <div class="match-content">
+                    <div class="team">
+                        <img src="{{ m.teams.home.logo }}" alt="Home Team">
+                        <span>{{ m.teams.home.name }}</span>
+                    </div>
+
+                    <div class="score-area">
+                        <span class="vs">VS</span>
+                        <span class="time">{{ m.fixture.date[11:16] }}</span>
+                    </div>
+
+                    <div class="team">
+                        <img src="{{ m.teams.away.logo }}" alt="Away Team">
+                        <span>{{ m.teams.away.name }}</span>
+                    </div>
+                </div>
             </a>
-        {% else %}
+            {% else %}
             <div class="empty-state">
-               <p>Aucun match disponible pour le moment. Vérifiez votre clé API.</p>
+                <p>Aucun match disponible pour le moment. Vérifiez votre clé API.</p>
             </div>
-        {% endfor %}
-</div>
+            {% endfor %}
+        </div>
     </main>
 </body>
+
 </html>
