@@ -75,9 +75,9 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .score-area { text-align: center; }
 .vs { display: block; font-weight: 800; color: var(--text-dim); font-size: 0.8rem; }
 .time { font-size: 0.8rem; color: var(--accent); }
-/* --- AJOUTS POUR LE MENU ET LES FILTRES --- */
 
-/* Alignement du menu à droite dans la nav */
+
+
 .nav-content {
     display: flex;
     justify-content: space-between;
@@ -101,7 +101,6 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
     color: var(--accent);
 }
 
-/* Style de la barre de filtres (championnats) */
 .league-filter-container {
     margin: 20px 0 30px 0;
 }
@@ -109,11 +108,11 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .league-filter-bar {
     display: flex;
     gap: 12px;
-    overflow-x: auto; /* Permet de scroller sur mobile */
+    overflow-x: auto;
     padding-bottom: 5px;
 }
 
-/* Design des boutons "capsule" */
+
 .filter-btn {
     background: var(--card-bg);
     color: var(--text-main);
@@ -133,9 +132,7 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
     font-weight: 600;
 }
 
-/* --- DESIGN DE LA PAGE MATCH --- */
 
-/* Carte principale (Hero) */
 .match-hero-card {
     background: var(--card-bg);
     border: 1px solid #334155;
@@ -156,10 +153,10 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .big-vs { font-size: 2rem; font-weight: 800; color: var(--text-dim); }
 .live-status { background: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
 
-/* Grid des détails */
+
 .details-grid {
     display: grid;
-    grid-template-columns: 1fr 1.2fr; /* Colonne de gauche plus étroite que le radar */
+    grid-template-columns: 1fr 1.2fr; 
     gap: 1.5rem;
 }
 
@@ -173,13 +170,13 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
 
 .info-card h3 { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 1.2rem; }
 
-/* Cotes */
+
 .odds-flex { display: flex; gap: 10px; }
 .odd { background: var(--bg-dark); flex: 1; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #334155; }
 .odd span { font-size: 0.7rem; color: var(--text-dim); display: block; }
 .odd strong { font-size: 1.3rem; color: var(--accent); }
 
-/* Jauges de confiance */
+
 .trust-row { display: flex; align-items: center; margin-bottom: 15px; font-size: 0.8rem; }
 .team-name { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bar-container { flex: 1; background: var(--bg-dark); height: 10px; border-radius: 5px; margin: 0 12px; }
@@ -187,7 +184,7 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
 .bar.home { background: var(--accent); }
 .bar.away { background: #3b82f6; }
 
-/* Forme (W-D-L) */
+
 .form-row { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
 .badge-f { width: 20px; height: 20px; line-height: 20px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-align: center; }
 .f-W { background: var(--accent); color: var(--bg-dark); }
@@ -196,7 +193,6 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
 
 .back-link { color: var(--accent); text-decoration: none; font-size: 0.9rem; margin-top: 1rem; display: inline-block; }
 
-/* Mobile */
 @media (max-width: 768px) {
     .match-hero-card { flex-direction: column; gap: 1.5rem; }
     .details-grid { grid-template-columns: 1fr; }
