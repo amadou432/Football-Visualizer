@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 
 # --- CONFIGURATION ---
-API_KEY = "da751d251758c34be7716e2e5383976f" # Ta clé qui marche !
+API_KEY = "da751d251758c34be7716e2e5383976f" 
 SUPABASE_URL = "https://deqthaukwlduxbsbmqgz.supabase.co"
 SUPABASE_KEY = "sb_secret_xv1e1Yjbv5eJ6rVcWQPbUQ_IQQpN8r2"
 
