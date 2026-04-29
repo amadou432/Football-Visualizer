@@ -7,8 +7,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
-url = os.getenv("https://deqthaukwlduxbsbmqgz.supabase.co")
-key = os.getenv("sb_publishable_QH_SEUy1i6Uc7QBtAQfr7Q_XeTOeDIK")
+url = "https://deqthaukwlduxbsbmqgz.supabase.co"
+key = "sb_publishable_QH_SEUy1i6Uc7QBtAQfr7Q_XeTOeDIK"
 supabase: Client = create_client(url, key)
 
 @app.route('/')
