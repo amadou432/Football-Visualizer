@@ -25,7 +25,12 @@ def afficher_matchs_bdd():
         print(f"Erreur de connexion Supabase : {e}")
         matchs_bdd = []
 
-    return render_template("affichage.html", matchs=matchs_bdd)
+    return render_template("home.html", matchs=matchs_bdd)
+
+
+@app.route('/match/<int:id>')
+def afficher_match(id):
+    return render_template("match.html")
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

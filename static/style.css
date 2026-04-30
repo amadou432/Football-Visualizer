@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap');
+
 :root {
     --bg-dark: #0f172a;
     --card-bg: #1e293b;
@@ -6,45 +8,130 @@
     --text-dim: #94a3b8;
 }
 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-main);
-    font-family: 'Inter', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     margin: 0;
 }
 
-.container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
-
+/* NAV */
 nav {
     background: var(--card-bg);
-    padding: 1rem;
+    padding: 1rem 2rem;
     border-bottom: 1px solid #334155;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.logo { font-weight: 800; color: var(--accent); font-size: 1.2rem; }
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+}
 
-.page-header { margin-bottom: 3rem; text-align: left; }
-h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-.subtitle { color: var(--text-dim); }
+.logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+}
 
+.nav-links { display: flex; gap: 20px; }
+
+.nav-item {
+    text-decoration: none;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.nav-item.active, .nav-item:hover { color: var(--accent); }
+
+/* FILTER */
+.league-filter-container {
+    max-width: 1100px;
+    margin: 2rem auto 0;
+    padding: 0 20px;
+}
+
+.league-filter-bar {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+    scrollbar-width: none;
+}
+
+.league-filter-bar::-webkit-scrollbar { display: none; }
+
+.filter-btn {
+    background: var(--card-bg);
+    color: var(--text-main);
+    border: 1px solid #334155;
+    padding: 8px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+    transition: 0.3s;
+}
+
+.filter-btn.active, .filter-btn:hover {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border-color: var(--accent);
+    font-weight: 600;
+}
+
+/* MAIN */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.page-header { margin-bottom: 2rem; }
+
+h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.3rem;
+}
+
+.subtitle { color: var(--text-dim); font-size: 0.95rem; }
+
+/* GRID */
 .match-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1.5rem;
 }
 
-/* LE REGLAGE 16PX */
 .match-card {
     background: var(--card-bg);
     border-radius: 16px;
     padding: 1.5rem;
     border: 1px solid #334155;
     transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
 .match-card:hover {
     border-color: var(--accent);
     transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15);
 }
 
 .league-tag {
@@ -53,6 +140,7 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
     text-transform: uppercase;
     letter-spacing: 1px;
     margin-bottom: 1rem;
+    font-weight: 600;
 }
 
 .match-content {
@@ -69,69 +157,66 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
     text-align: center;
 }
 
-.team img { width: 48px; height: 48px; margin-bottom: 0.5rem; }
+.team img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0.5rem;
+    object-fit: contain;
+}
+
 .team span { font-size: 0.9rem; font-weight: 500; }
 
 .score-area { text-align: center; }
 .vs { display: block; font-weight: 800; color: var(--text-dim); font-size: 0.8rem; }
-.time { font-size: 0.8rem; color: var(--accent); }
+.time { font-size: 0.85rem; color: var(--accent); font-weight: 600; margin-top: 4px; display: block; }
 
-
-
-.nav-content {
+/* CONFIDENCE */
+.confidence {
+    margin-top: 1rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 8px;
 }
 
-.nav-links {
-    display: flex;
-    gap: 20px;
-}
-
-.nav-item {
-    text-decoration: none;
+.confidence-label {
+    font-size: 0.7rem;
     color: var(--text-dim);
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.nav-item.active, .nav-item:hover {
+.confidence-bar {
+    flex: 1;
+    height: 4px;
+    background: #334155;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.confidence-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.confidence-value {
+    font-size: 0.75rem;
+    font-weight: 700;
     color: var(--accent);
 }
 
-.league-filter-container {
-    margin: 20px 0 30px 0;
+/* EMPTY STATE */
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem;
+    color: var(--text-dim);
 }
 
-.league-filter-bar {
-    display: flex;
-    gap: 12px;
-    overflow-x: auto;
-    padding-bottom: 5px;
-}
-
-
-.filter-btn {
-    background: var(--card-bg);
-    color: var(--text-main);
-    border: 1px solid #334155;
-    padding: 8px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    transition: 0.3s;
-}
-
-.filter-btn.active, .filter-btn:hover {
-    background: var(--accent);
-    color: var(--bg-dark);
-    border-color: var(--accent);
-    font-weight: 600;
-}
-
+/* =====================
+   PAGE MATCH
+   ===================== */
 
 .match-hero-card {
     background: var(--card-bg);
@@ -145,55 +230,109 @@ h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
 }
 
 .hero-team { text-align: center; flex: 1; }
-.hero-team img { width: 80px; height: 80px; margin-bottom: 1rem; }
+.hero-team img { width: 80px; height: 80px; margin-bottom: 1rem; object-fit: contain; }
 .hero-team h2 { font-size: 1.2rem; margin: 0; color: var(--text-main); }
 
 .hero-score { text-align: center; flex: 1; }
 .big-score { font-size: 3.5rem; font-weight: 900; color: var(--accent); }
-.big-vs { font-size: 2rem; font-weight: 800; color: var(--text-dim); }
-.live-status { background: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+.big-vs { font-size: 2rem; font-weight: 800; color: var(--text-dim); margin-bottom: 0.5rem; }
+.match-date-time { font-size: 1.1rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; }
+.league-detail { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+.stadium { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem; }
+.live-status { background: #ef4444; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: inline-block; margin-bottom: 0.5rem; }
 
-
+/* DETAILS GRID */
 .details-grid {
     display: grid;
-    grid-template-columns: 1fr 1.2fr; 
+    grid-template-columns: 1fr 1.2fr;
     gap: 1.5rem;
+    margin-bottom: 1.5rem;
 }
+
+.details-column { display: flex; flex-direction: column; gap: 1.5rem; }
 
 .info-card {
     background: var(--card-bg);
     border: 1px solid #334155;
     border-radius: 16px;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
 }
 
-.info-card h3 { font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 1.2rem; }
+.info-card h3 {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+}
 
-
+/* COTES */
 .odds-flex { display: flex; gap: 10px; }
-.odd { background: var(--bg-dark); flex: 1; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #334155; }
-.odd span { font-size: 0.7rem; color: var(--text-dim); display: block; }
+.odd {
+    background: var(--bg-dark);
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid #334155;
+}
+.odd span { font-size: 0.7rem; color: var(--text-dim); display: block; margin-bottom: 4px; }
 .odd strong { font-size: 1.3rem; color: var(--accent); }
 
-
-.trust-row { display: flex; align-items: center; margin-bottom: 15px; font-size: 0.8rem; }
-.team-name { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.bar-container { flex: 1; background: var(--bg-dark); height: 10px; border-radius: 5px; margin: 0 12px; }
+/* INDICE DE CONFIANCE */
+.trust-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 0.8rem;
+    gap: 8px;
+}
+.team-name { width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+.bar-container { flex: 1; background: var(--bg-dark); height: 10px; border-radius: 5px; }
 .bar { height: 100%; border-radius: 5px; transition: width 0.5s ease-in-out; }
 .bar.home { background: var(--accent); }
 .bar.away { background: #3b82f6; }
+.val { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); min-width: 35px; text-align: right; }
 
-
+/* FORME */
 .form-row { display: flex; justify-content: center; gap: 4px; margin-top: 10px; }
-.badge-f { width: 20px; height: 20px; line-height: 20px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-align: center; }
+.badge-f {
+    width: 22px;
+    height: 22px;
+    line-height: 22px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: bold;
+    text-align: center;
+}
 .f-W { background: var(--accent); color: var(--bg-dark); }
 .f-D { background: var(--text-dim); color: white; }
 .f-L { background: #ef4444; color: white; }
 
-.back-link { color: var(--accent); text-decoration: none; font-size: 0.9rem; margin-top: 1rem; display: inline-block; }
+/* BACK LINK */
+.back-link {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+    display: inline-block;
+    margin-top: 1rem;
+    transition: 0.3s;
+}
+.back-link:hover { opacity: 0.7; }
+
+/* LOGO NAV AVEC IMAGE */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.logo img { width: 100px; height: 50px; object-fit: contain; }
 
 @media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    .match-grid { grid-template-columns: 1fr; }
     .match-hero-card { flex-direction: column; gap: 1.5rem; }
     .details-grid { grid-template-columns: 1fr; }
 }
