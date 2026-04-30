@@ -10,27 +10,30 @@ HEADERS_SUPA = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
     "Content-Type": "application/json",
-    "Prefer": "resolution=merge-duplicates" 
+    "Prefer": "resolution=merge-duplicates"
 }
 
+# Les 5 grands championnats
+LIGUES = [39, 61, 140, 135, 78]  # Premier League, Ligue 1, La Liga, Serie A, Bundesliga
+
 date_du_jour = datetime.now().strftime('%Y-%m-%d')
-print(f"---  Début de la synchro mondiale pour : {date_du_jour} ---")
+print(f"--- Début de la synchro pour : {date_du_jour} ---")
 
 # --- 1. RÉCUPÉRATION ---
-url_api = "https://v3.football.api-sports.io/fixtures"
 response = requests.get(
-    url_api,
+    "https://v3.football.api-sports.io/fixtures",
     headers={"x-apisports-key": API_KEY},
     params={"date": date_du_jour}
 )
-
 data = response.json()
-matchs_api = data.get("response", [])
+
+# On filtre seulement les 5 grands championnats
+matchs_api = [m for m in data.get("response", []) if m["league"]["id"] in LIGUES]
 
 if not matchs_api:
-    print(" Aucun match trouvé sur l'API aujourd'hui.")
+    print("Aucun match trouvé aujourd'hui dans les 5 grands championnats.")
 else:
-    print(f" {len(matchs_api)} matchs récupérés. Préparation de l'envoi...")
+    print(f"{len(matchs_api)} matchs récupérés. Préparation de l'envoi...")
 
     equipes_dict = {}
     liste_matchs = []
@@ -61,17 +64,15 @@ else:
     liste_equipes_final = list(equipes_dict.values())
 
     # --- 3. ENVOI À SUPABASE ---
-    print(f" Envoi en cours vers Supabase...")
+    print("Envoi en cours vers Supabase...")
     
-    # Envoi des équipes
     requests.post(f"{SUPABASE_URL}/rest/v1/equipe", headers=HEADERS_SUPA, json=liste_equipes_final)
     
-    # Envoi des matchs
     res = requests.post(f"{SUPABASE_URL}/rest/v1/match", headers=HEADERS_SUPA, json=liste_matchs)
 
     if res.status_code in [200, 201, 204]:
-        print(f" RÉUSSITE TOTALE ! {len(liste_matchs)} matchs sont maintenant dans ta base.")
+        print(f"RÉUSSITE ! {len(liste_matchs)} matchs stockés dans Supabase.")
     else:
-        print(f" Erreur lors de l'envoi : {res.text}")
+        print(f"Erreur : {res.text}")
 
 print("--- Fin du script ---")
