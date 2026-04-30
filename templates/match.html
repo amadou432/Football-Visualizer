@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PSG vs Marseille - Football Visualizer</title>
+    <title>{{ match.home_name }} vs {{ match.away_name }} - Football Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-
     <nav>
         <div class="nav-content">
             <div class="logo">
                 <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Football Visualizer">
                 <span>SOCCERVISUALIZER</span>
             </div>
-
             <div class="nav-links">
                 <a href="/" class="nav-item active">Home</a>
             </div>
@@ -24,69 +22,67 @@
     </nav>
 
     <main class="container">
-
+        <!-- Section Hero : Score et Équipes -->
         <section class="match-hero-card">
-
             <div class="hero-team">
-                <img src="https://crests.football-data.org/524.png" alt="PSG">
-                <h2>PSG</h2>
-
+                <img src="{{ match.home_logo }}" alt="{{ match.home_name }}">
+                <h2>{{ match.home_name }}</h2>
                 <div class="form-row">
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-D">D</span>
-                    <span class="badge-f f-L">L</span>
-                    <span class="badge-f f-W">W</span>
+                    {% if match.details_match and match.details_match.forme_actuelle %}
+                        {% for res in match.details_match.forme_actuelle.home %}
+                            <span class="badge-f f-{{ res }}">{{ res }}</span>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
 
             <div class="hero-score">
-                <p class="league-detail">Ligue 1</p>
-
+                <p class="league-detail">{{ match.league_name }}</p>
                 <div class="big-vs">VS</div>
-                <div class="match-date-time">21:00</div>
-
-                <p class="stadium">🏟 Parc des Princes</p>
+                <div class="match-date-time">{{ match.heure }}</div>
+                <p class="stadium">🏟 {{ match.venue_name }}, {{ match.venue_city }}</p>
             </div>
 
             <div class="hero-team">
-                <img src="https://crests.football-data.org/516.png" alt="Marseille">
-                <h2>Marseille</h2>
-
+                <img src="{{ match.away_logo }}" alt="{{ match.away_name }}">
+                <h2>{{ match.away_name }}</h2>
                 <div class="form-row">
-                    <span class="badge-f f-L">L</span>
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-D">D</span>
-                    <span class="badge-f f-L">L</span>
+                    {% if match.details_match and match.details_match.forme_actuelle %}
+                        {% for res in match.details_match.forme_actuelle.away %}
+                            <span class="badge-f f-{{ res }}">{{ res }}</span>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
-
         </section>
 
+        <!-- Grille de Détails -->
         <div class="details-grid">
-
+            <!-- Colonne Gauche -->
             <div class="details-column">
-
                 <div class="info-card">
                     <h3>💰 Cotes 1N2</h3>
                     <div class="odds-flex">
-                        <div class="odd">
-                            <span>1</span>
-                            <strong>1.45</strong>
-                        </div>
-                        <div class="odd">
-                            <span>N</span>
-                            <strong>4.20</strong>
-                        </div>
-                        <div class="odd">
-                            <span>2</span>
-                            <strong>6.50</strong>
-                        </div>
+                        <div class="odd"><span>1</span><strong>{{ match.home_odds or '1.00' }}</strong></div>
+                        <div class="odd"><span>N</span><strong>{{ match.draw_odds or '1.00' }}</strong></div>
+                        <div class="odd"><span>2</span><strong>{{ match.away_odds or '1.00' }}</strong></div>
                     </div>
                 </div>
 
                 <div class="info-card">
+                    <h3>🕒 Timing des Buts (Stats Ligue)</h3>
+                    <canvas id="goalsTimelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Colonne Droite -->
+            <div class="details-column">
+                <div class="info-card">
+                    <h3>📊 Radar de Performance</h3>
+                    <canvas id="radarChart"></canvas>
+                </div>
+
+                 <div class="info-card">
                     <h3>🎯 Indice de Confiance</h3>
                     <div class="trust-row">
                         <span class="team-name">PSG</span>
@@ -103,38 +99,31 @@
                         <span class="val">28%</span>
                     </div>
                 </div>
-
-            </div>
-
-            <div class="details-column">
-                <div class="info-card">
-                    <h3>📊 Radar de Performance</h3>
-                    <canvas id="radarChart"></canvas>
+                    </div>
                 </div>
             </div>
-
         </div>
 
         <a href="/" class="back-link">← Revenir à la liste</a>
-
     </main>
 
     <script>
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        new Chart(ctx, {
+        // Configuration Radar
+        const ctxRadar = document.getElementById('radarChart').getContext('2d');
+        new Chart(ctxRadar, {
             type: 'radar',
             data: {
                 labels: ['Attaque', 'Défense', 'Possession', 'Forme', 'Historique'],
                 datasets: [
                     {
-                        label: 'PSG',
+                        label: '{{ match.home_name }}',
                         data: [85, 70, 90, 80, 75],
                         backgroundColor: 'rgba(16, 185, 129, 0.2)',
                         borderColor: '#10b981',
                         borderWidth: 2
                     },
                     {
-                        label: 'Marseille',
+                        label: '{{ match.away_name }}',
                         data: [65, 60, 55, 70, 50],
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         borderColor: '#3b82f6',
@@ -143,19 +132,40 @@
                 ]
             },
             options: {
-                scales: {
-                    r: {
-                        grid: { color: '#334155' },
-                        pointLabels: { color: '#f8fafc' },
-                        ticks: { display: false, beginAtZero: true }
-                    }
+                scales: { 
+                    r: { 
+                        grid: { color: '#334155' }, 
+                        pointLabels: { color: '#f8fafc' }, 
+                        ticks: { display: false } 
+                    } 
                 },
-                plugins: {
-                    legend: { labels: { color: '#f8fafc' } }
+                plugins: { legend: { labels: { color: '#f8fafc' } } }
+            }
+        });
+
+        // Configuration Timing des Buts
+        const goalsData = {{ match.details_match.moments_buts | tojson | safe if match.details_match else '{}' }};
+        const ctxGoals = document.getElementById('goalsTimelineChart').getContext('2d');
+        
+        new Chart(ctxGoals, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(goalsData),
+                datasets: [{
+                    label: 'Buts marqués par tranche de 15 min',
+                    data: Object.values(goalsData),
+                    backgroundColor: '#10b981',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#334155' }, ticks: { color: '#f8fafc' } },
+                    x: { grid: { display: false }, ticks: { color: '#f8fafc' } }
                 }
             }
         });
     </script>
-
 </body>
 </html>
