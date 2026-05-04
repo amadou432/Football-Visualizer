@@ -28,39 +28,20 @@
         <section class="match-hero-card">
 
             <div class="hero-team">
-                <img src="https://crests.football-data.org/524.png" alt="PSG">
-                <h2>PSG</h2>
+    <img src="{{ match.equipe_dom.logo_equipe }}" alt="{{ match.equipe_dom.nom_equipe }}">
+    <h2>{{ match.equipe_dom.nom_equipe }}</h2>
+</div>
 
-                <div class="form-row">
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-D">D</span>
-                    <span class="badge-f f-L">L</span>
-                    <span class="badge-f f-W">W</span>
-                </div>
-            </div>
+<div class="hero-score">
+    <p class="league-detail">{{ match.nom_champi }}</p>
+    <div class="big-vs">VS</div>
+    <div class="match-date-time">{{ match.heure }}</div>
+</div>
 
-            <div class="hero-score">
-                <p class="league-detail">Ligue 1</p>
-
-                <div class="big-vs">VS</div>
-                <div class="match-date-time">21:00</div>
-
-                <p class="stadium">🏟 Parc des Princes</p>
-            </div>
-
-            <div class="hero-team">
-                <img src="https://crests.football-data.org/516.png" alt="Marseille">
-                <h2>Marseille</h2>
-
-                <div class="form-row">
-                    <span class="badge-f f-L">L</span>
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-W">W</span>
-                    <span class="badge-f f-D">D</span>
-                    <span class="badge-f f-L">L</span>
-                </div>
-            </div>
+<div class="hero-team">
+    <img src="{{ match.equipe_ext.logo_equipe }}" alt="{{ match.equipe_ext.nom_equipe }}">
+    <h2>{{ match.equipe_ext.nom_equipe }}</h2>
+</div>
 
         </section>
 
@@ -119,43 +100,6 @@
 
     </main>
 
-    <script>
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['Attaque', 'Défense', 'Possession', 'Forme', 'Historique'],
-                datasets: [
-                    {
-                        label: 'PSG',
-                        data: [85, 70, 90, 80, 75],
-                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                        borderColor: '#10b981',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Marseille',
-                        data: [65, 60, 55, 70, 50],
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderColor: '#3b82f6',
-                        borderWidth: 2
-                    }
-                ]
-            },
-            options: {
-                scales: {
-                    r: {
-                        grid: { color: '#334155' },
-                        pointLabels: { color: '#f8fafc' },
-                        ticks: { display: false, beginAtZero: true }
-                    }
-                },
-                plugins: {
-                    legend: { labels: { color: '#f8fafc' } }
-                }
-            }
-        });
-    </script>
-
+    
 </body>
 </html>

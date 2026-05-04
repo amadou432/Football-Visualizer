@@ -34,36 +34,38 @@
         </header>
 
         <div class="match-grid" id="matchGrid">
-            {% for m in matchs %}
-            <a href="/match/{{ m.id }}" class="match-card" data-league="{{ m.league_name }}">
-                <div class="league-tag">{{ m.league_name }}</div>
-                <div class="match-content">
-                    <div class="team">
-                        <img src="{{ m.home_logo }}" alt="{{ m.home_name }}">
-                        <span>{{ m.home_name }}</span>
-                    </div>
-                    <div class="score-area">
-                        <span class="vs">VS</span>
-                        <span class="time">{{ m.heure }}</span>
-                    </div>
-                    <div class="team">
-                        <img src="{{ m.away_logo }}" alt="{{ m.away_name }}">
-                        <span>{{ m.away_name }}</span>
-                    </div>
-                </div>
-                <div class="confidence">
-                    <span class="confidence-label">Confiance</span>
-                    <div class="confidence-bar">
-                        <div class="confidence-fill" style="width: {{ m.confidence if m.confidence else 0 }}%"></div>
-                    </div>
-                    <span class="confidence-value">{{ m.confidence if m.confidence else 0 }}/100</span>
-                </div>
-            </a>
-            {% else %}
-            <div class="empty-state">
-                <p>Aucun match disponible pour le moment.</p>
-            </div>
+            {% for m in match %}
+<a href="/match/{{ m.id_match }}" class="match-card" data-league="{{ m.nom_champi }}">
+    <div class="league-tag">{{ m.nom_champi }}</div>
+    <div class="match-content">
+
+        <div class="team">
+            {% for e in equipe %}
+                {% if e.id_equipe == m.id_equipe_dom %}
+                    <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
+                    <span>{{ e.nom_equipe }}</span>
+                
+                {% endif %}
             {% endfor %}
+        </div>
+
+        <div class="score-area">
+            <span class="vs">VS</span>
+            <span class="time">{{ m.heure }}</span>
+        </div>
+
+        <div class="team">
+            {% for e in equipe %}
+                {% if e.id_equipe == m.id_equipe_ext %}
+                    <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
+                    <span>{{ e.nom_equipe }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+    </div>
+</a>
+{% endfor %}
         </div>
 
     </main>

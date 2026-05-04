@@ -14,23 +14,46 @@ supabase: Client = create_client(url, key)
 @app.route('/')
 def afficher_matchs_bdd():
     try:
-        
-        response = supabase.table("matchs").select(
-            "id, date, heure, league_name, home_name, home_logo, away_name, away_logo, venue_name"
+        response = supabase.table("match").select(
+            "id_match, date_match, heure, nom_champi, id_equipe_dom, id_equipe_ext"
         ).execute()
-        
-        matchs_bdd = response.data
-        
-    except Exception as e:
-        print(f"Erreur de connexion Supabase : {e}")
-        matchs_bdd = []
+        match_bdd = response.data
 
-    return render_template("home.html", matchs=matchs_bdd)
+        equipes_response = supabase.table("equipe").select(
+            "id_equipe, nom_equipe, logo_equipe"
+        ).execute()
+        equipes = equipes_response.data
+
+    except Exception as e:
+        print(f"Erreur : {e}")
+        match_bdd = []
+        equipes = []
+
+    return render_template("home.html", match=match_bdd, equipe=equipes)
 
 
 @app.route('/match/<int:id>')
 def afficher_match(id):
-    return render_template("match.html")
+    try:
+        response = supabase.table("match").select(
+            "id_match, date_match, heure, nom_champi, id_equipe_dom, id_equipe_ext"
+        ).eq("id_match", id).execute()
+        match = response.data[0] if response.data else None
+
+        equipes_response = supabase.table("equipe").select(
+            "id_equipe, nom_equipe, logo_equipe"
+        ).execute()
+        equipes = {e['id_equipe']: e for e in equipes_response.data}
+
+        if match:
+            match['equipe_dom'] = equipes.get(match['id_equipe_dom'], {})
+            match['equipe_ext'] = equipes.get(match['id_equipe_ext'], {})
+
+    except Exception as e:
+        print(f"Erreur : {e}")
+        match = None
+
+    return render_template("match.html", match=match)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
