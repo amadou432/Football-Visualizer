@@ -42,20 +42,20 @@ def get_api(endpoint, params=None):
         )
 
         if r.status_code != 200:
-            print(f"❌ API ERROR {r.status_code}")
+            print(f" API ERROR {r.status_code}")
             print(r.text[:300])
             return []
 
         data = r.json()
 
         if data.get("errors"):
-            print("⚠️ API ERROR :", data["errors"])
+            print(" API ERROR :", data["errors"])
             return []
 
         return data.get("response", [])
 
     except Exception as e:
-        print("❌ Exception API :", e)
+        print(" Exception API :", e)
         return []
 
 
@@ -93,29 +93,29 @@ def envoyer_supabase(data):
         )
 
         if resp.status_code not in [200, 201]:
-            print("❌ SUPABASE :", resp.status_code, resp.text[:200])
+            print(" SUPABASE :", resp.status_code, resp.text[:200])
             return False
 
         return True
 
     except Exception as e:
-        print("❌ Exception Supabase :", e)
+        print(" Exception Supabase :", e)
         return False
 
 
 # ============================================================
 # MAIN
 # ============================================================
-print("\n🚀 Lancement...\n")
+print("\n Lancement...\n")
 
 restants = appels_restants()
-print(f"⚡ Quota restant : {restants}/100")
+print(f" Quota restant : {restants}/100")
 
 if restants <= 10:
-    print("❌ Pas assez d'appels API")
+    print(" Pas assez d'appels API")
     exit()
 
-print("\n🏆 Récupération des équipes...\n")
+print("\n Récupération des équipes...\n")
 
 toutes_equipes = []
 
@@ -138,17 +138,17 @@ for champ in CHAMPIONNATS:
             "season": champ["season"]
         })
 
-print(f"\n✅ {len(toutes_equipes)} équipes récupérées")
+print(f"\n {len(toutes_equipes)} équipes récupérées")
 
 if not toutes_equipes:
-    print("❌ Aucune équipe")
+    print(" Aucune équipe")
     exit()
 
 # quota sécurité
 max_teams = restants - 5
 toutes_equipes = toutes_equipes[:max_teams]
 
-print(f"\n📊 Traitement de {len(toutes_equipes)} équipes...\n")
+print(f"\n Traitement de {len(toutes_equipes)} équipes...\n")
 
 total_insert = 0
 
@@ -224,14 +224,14 @@ for i, equipe in enumerate(toutes_equipes):
     if ok:
         total_insert += len(forme_data)
         forme = " ".join([x["resultat"] for x in forme_data])
-        print(f"✅ {forme}")
+        print(f" {forme}")
     else:
-        print("❌ insert KO")
+        print(" insert KO")
 
     time.sleep(0.3)
 
 print("\n" + "=" * 50)
-print("🎉 TERMINÉ")
+print(" TERMINÉ")
 print("Équipes traitées :", len(toutes_equipes))
 print("Lignes insérées :", total_insert)
 print("=" * 50)
