@@ -34,38 +34,61 @@
         </header>
 
         <div class="match-grid" id="matchGrid">
-            {% for m in match %}
-<a href="/match/{{ m.id_match }}" class="match-card" data-league="{{ m.nom_champi }}">
-    <div class="league-tag">{{ m.nom_champi }}</div>
-    <div class="match-content">
+       {% for m in match %}
+        <a href="/match/{{ m.id_match }}" class="match-card" data-league="{{ m.nom_champi }}">
+            <div class="league-tag">{{ m.nom_champi }}</div>
 
-        <div class="team">
-            {% for e in equipe %}
-                {% if e.id_equipe == m.id_equipe_dom %}
-                    <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
-                    <span>{{ e.nom_equipe }}</span>
-                
-                {% endif %}
-            {% endfor %}
-        </div>
+            <div class="match-content">
+                <div class="team">
+                    {% for e in equipe %}
+                        {% if e.id_equipe == m.id_equipe_dom %}
+                            <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
+                            <span>{{ e.nom_equipe }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="score-area">
+                    <span class="vs">VS</span>
+                    <span class="time">{{ m.heure if m.heure else '--:--' }}</span>
+                </div>
+                <div class="team">
+                    {% for e in equipe %}
+                        {% if e.id_equipe == m.id_equipe_ext %}
+                            <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
+                            <span>{{ e.nom_equipe }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
 
-        <div class="score-area">
-            <span class="vs">VS</span>
-            <span class="time">{{ m.heure }}</span>
-        </div>
+            {% if m.cote %}
+                <div class="odds-row">
+                    <div class="odd-box">
+                        <span>1</span>
+                        <strong>{{ m.cote.cote_1 }}</strong>
+                        <strong>{{ m.cote.bookmaker_1 }}</strong>
+                    </div>
+                    <div class="odd-box">
+                        <span>N</span>
+                        <strong>{{ m.cote.cote_n }}</strong>
+                        <strong>{{ m.cote.bookmaker_n }}</strong>
 
-        <div class="team">
-            {% for e in equipe %}
-                {% if e.id_equipe == m.id_equipe_ext %}
-                    <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
-                    <span>{{ e.nom_equipe }}</span>
-                {% endif %}
-            {% endfor %}
-        </div>
+                    </div>
+                    <div class="odd-box">
+                        <span>2</span>
+                        <strong>{{ m.cote.cote_2 }}</strong>
+                        <strong>{{ m.cote.bookmaker_2 }}</strong>
 
-    </div>
-</a>
-{% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="odds-row">
+                    <span class="no-odds">Cotes indisponibles</span>
+                </div>
+            {% endif %}
+
+        </a>  <!-- ← fermeture correcte -->
+        {% endfor %}
         </div>
 
     </main>

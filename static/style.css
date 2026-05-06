@@ -336,3 +336,30 @@ h1 {
     .match-hero-card { flex-direction: column; gap: 1.5rem; }
     .details-grid { grid-template-columns: 1fr; }
 }
+/* COTE */
+.odds-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 12px 16px 16px;
+}
+
+.odd-box {
+    min-width: 64px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #f2f4f8;
+    text-align: center;
+}
+
+.odd-box span {
+    display: block;
+    font-size: 12px;
+    color: #667085;
+}
+
+.odd-box strong {
+    display: block;
+    font-size: 16px;
+    color: #111827;
+}

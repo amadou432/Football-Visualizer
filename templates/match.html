@@ -45,27 +45,20 @@
 
         </section>
 
-        <div class="details-grid">
-
-            <div class="details-column">
-
-                <div class="info-card">
-                    <h3>💰 Cotes 1N2</h3>
-                    <div class="odds-flex">
-                        <div class="odd">
-                            <span>1</span>
-                            <strong>1.45</strong>
-                        </div>
-                        <div class="odd">
-                            <span>N</span>
-                            <strong>4.20</strong>
-                        </div>
-                        <div class="odd">
-                            <span>2</span>
-                            <strong>6.50</strong>
-                        </div>
-                    </div>
-                </div>
+        <div class="odds-flex">
+            <div class="odd">
+                <span>1</span>
+                <strong>{{ match.cote.cote_1 if match.cote else 'N/A' }}</strong>
+            </div>
+            <div class="odd">
+                <span>N</span>
+                <strong>{{ match.cote.cote_n if match.cote else 'N/A' }}</strong>
+            </div>
+            <div class="odd">
+                <span>2</span>
+                <strong>{{ match.cote.cote_2 if match.cote else 'N/A' }}</strong>
+            </div>
+        </div>
 
                 <div class="info-card">
                     <h3>🎯 Indice de Confiance</h3>
@@ -89,7 +82,7 @@
 
             <div class="details-column">
                 <div class="info-card">
-                    <h3>📊 Radar de Performance</h3>
+                    <h3>📊 Formes des Equipes</h3>
                     <canvas id="radarChart"></canvas>
                 </div>
             </div>
