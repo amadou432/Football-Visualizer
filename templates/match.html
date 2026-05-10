@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ fixture.teams.home.name }} vs {{ fixture.teams.away.name }}</title>
+    <title>PSG vs Marseille - Football Visualizer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -12,135 +12,79 @@
 
     <nav>
         <div class="nav-content">
-            <span class="logo">⚽ SoccerVisualizer</span>
+            <div class="logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Football Visualizer">
+                <span>SOCCERVISUALIZER</span>
+            </div>
 
             <div class="nav-links">
-                <a href="/" class="nav-item">Home</a>
-                <a href="#" class="nav-item active">Match</a>
+                <a href="/" class="nav-item active">Home</a>
             </div>
         </div>
     </nav>
 
     <main class="container">
 
-        <!-- HERO MATCH -->
         <section class="match-hero-card">
 
-            <!-- HOME TEAM -->
             <div class="hero-team">
-                <img src="{{ fixture.teams.home.logo }}" alt="{{ fixture.teams.home.name }}">
-                <h2>{{ fixture.teams.home.name }}</h2>
+    <img src="{{ match.equipe_dom.logo_equipe }}" alt="{{ match.equipe_dom.nom_equipe }}">
+    <h2>{{ match.equipe_dom.nom_equipe }}</h2>
+</div>
 
-                {% if home_forme %}
-                <div class="form-row">
-                    {% for r in home_forme %}
-                        <span class="badge-f f-{{ r }}">{{ r }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
+<div class="hero-score">
+    <p class="league-detail">{{ match.nom_champi }}</p>
+    <div class="big-vs">VS</div>
+    <div class="match-date-time">{{ match.heure }}</div>
+</div>
 
-            <!-- SCORE / INFO -->
-            <div class="hero-score">
-
-                <p class="league-detail">{{ fixture.league.name }}</p>
-
-                {% if fixture.goals.home is not none %}
-                    <div class="big-score">
-                        {{ fixture.goals.home }} - {{ fixture.goals.away }}
-                    </div>
-                    <span class="live-status">{{ status }}</span>
-                {% else %}
-                    <div class="big-vs">VS</div>
-                    <div class="match-date-time">
-                        {{ fixture.fixture.date[11:16] }}
-                    </div>
-                {% endif %}
-
-                <p class="stadium">
-                    🏟 {{ fixture.fixture.venue.name }}
-                </p>
-            </div>
-
-            <!-- AWAY TEAM -->
-            <div class="hero-team">
-                <img src="{{ fixture.teams.away.logo }}" alt="{{ fixture.teams.away.name }}">
-                <h2>{{ fixture.teams.away.name }}</h2>
-
-                {% if away_forme %}
-                <div class="form-row">
-                    {% for r in away_forme %}
-                        <span class="badge-f f-{{ r }}">{{ r }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
+<div class="hero-team">
+    <img src="{{ match.equipe_ext.logo_equipe }}" alt="{{ match.equipe_ext.nom_equipe }}">
+    <h2>{{ match.equipe_ext.nom_equipe }}</h2>
+</div>
 
         </section>
 
-        <!-- DETAILS -->
-        <div class="details-grid">
+        <div class="odds-flex">
+            <div class="odd">
+                <span>1</span>
+                <strong>{{ match.cote.cote_1 if match.cote else 'N/A' }}</strong>
+            </div>
+            <div class="odd">
+                <span>N</span>
+                <strong>{{ match.cote.cote_n if match.cote else 'N/A' }}</strong>
+            </div>
+            <div class="odd">
+                <span>2</span>
+                <strong>{{ match.cote.cote_2 if match.cote else 'N/A' }}</strong>
+            </div>
+        </div>
 
-            <!-- LEFT COLUMN -->
-            <div class="details-column">
-
-                <!-- ODDS -->
-                <div class="info-card">
-                    <h3>💰 Cotes 1N2</h3>
-
-                    {% if cotes %}
-                    <div class="odds-flex">
-                        <div class="odd">
-                            <span>1</span>
-                            <strong>{{ cotes.home }}</strong>
-                        </div>
-                        <div class="odd">
-                            <span>N</span>
-                            <strong>{{ cotes.draw }}</strong>
-                        </div>
-                        <div class="odd">
-                            <span>2</span>
-                            <strong>{{ cotes.away }}</strong>
-                        </div>
-                    </div>
-                    {% else %}
-                    <p style="color: var(--text-dim)">
-                        Cotes non disponibles
-                    </p>
-                    {% endif %}
-                </div>
-
-                <!-- CONFIDENCE -->
                 <div class="info-card">
                     <h3>🎯 Indice de Confiance</h3>
-
                     <div class="trust-row">
-                        <span class="team-name">{{ fixture.teams.home.name }}</span>
+                        <span class="team-name">PSG</span>
                         <div class="bar-container">
-                            <div class="bar home" style="width: {{ home_indice }}%"></div>
+                            <div class="bar home" style="width: 72%"></div>
                         </div>
-                        <span class="val">{{ home_indice }}%</span>
+                        <span class="val">72%</span>
                     </div>
-
                     <div class="trust-row">
-                        <span class="team-name">{{ fixture.teams.away.name }}</span>
+                        <span class="team-name">Marseille</span>
                         <div class="bar-container">
-                            <div class="bar away" style="width: {{ away_indice }}%"></div>
+                            <div class="bar away" style="width: 28%"></div>
                         </div>
-                        <span class="val">{{ away_indice }}%</span>
+                        <span class="val">28%</span>
                     </div>
                 </div>
 
             </div>
 
-            <!-- RIGHT COLUMN -->
             <div class="details-column">
-
                 <div class="info-card">
-                    <h3>📊 Radar de Performance</h3>
+                    <h3>📊 Formes des Equipes</h3>
                     <canvas id="radarChart"></canvas>
                 </div>
-
             </div>
 
         </div>
@@ -149,53 +93,6 @@
 
     </main>
 
-    <!-- CHART -->
-    <script>
-        const ctx = document.getElementById('radarChart').getContext('2d');
-
-        new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: [
-                    'Attaque',
-                    'Défense',
-                    'Possession',
-                    'Forme',
-                    'Historique'
-                ],
-                datasets: [
-                    {
-                        label: '{{ fixture.teams.home.name }}',
-                        data: [70, 70, 70, 70, 70],
-                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                        borderColor: '#10b981',
-                        borderWidth: 2
-                    },
-                    {
-                        label: '{{ fixture.teams.away.name }}',
-                        data: [60, 60, 60, 60, 60],
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                        borderColor: '#3b82f6',
-                        borderWidth: 2
-                    }
-                ]
-            },
-            options: {
-                scales: {
-                    r: {
-                        grid: { color: '#334155' },
-                        pointLabels: { color: '#f8fafc' },
-                        ticks: { display: false }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: '#f8fafc' }
-                    }
-                }
-            }
-        });
-    </script>
-
+    
 </body>
 </html>
