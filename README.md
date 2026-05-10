@@ -55,7 +55,29 @@ cote            — Cotes 1/N/2 par bookmaker
 joueur          — Informations sur les joueurs
 forme_equipe    — Informations sur les matchs précèdents des equipes(buts marqués, buts encaissés,...)
 ```
+## 🔄 Récupération des données
 
+### Via API Football
+Les données des matchs et des cotes sont récupérées automatiquement via **API Football** (plan gratuit — 100 requêtes/jour).
+
+**Ce qu'on récupère :**
+- Liste des matchs du jour pour les 5 grands championnats
+- Meilleures cotes 1/N/2 avec le nom du bookmaker
+- Logos et informations des équipes
+
+**Fonctionnement :**
+API Football → Script Python → Supabase (stockage) → Site web (affichage)
+Les données sont récupérées de deux façons différentes :
+
+### Via API Football
+Certaines données sont récupérées automatiquement via **API Football** (plan gratuit — 100 requêtes/jour) :
+- La liste des matchs du jour pour les 5 grands championnats
+- Les meilleures cotes 1/N/2 avec le nom du bookmaker associé
+
+### Via Web Scrapping
+D'autres données sont récupérées par **web scrapping** sur des sites de référence comme **Transfermarkt** et **Flashscore** :
+- Les joueurs absents (blessés/suspendus) pour chaque match
+- Les compositions probables des équipes
 ---
 
 ## 📁 Structure du projet
@@ -119,9 +141,7 @@ Ouvre **http://127.0.0.1:5001** dans ton navigateur.
 
 ---
 
-## 👥 Équipe
 
-Projet réalisé dans le cadre d'un projet scolaire.
 
 ---
 
