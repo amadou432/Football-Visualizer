@@ -1,0 +1,18 @@
+# ============================================
+# Football Visualizer - Dépendances Python
+# ============================================
+
+# Framework web - Création du site
+flask==3.1.0
+
+# Client Supabase - Connexion à la base de données
+supabase==2.0.0
+
+# Variables d'environnement - Sécuriser les clés API
+python-dotenv==1.0.1
+
+# Requêtes HTTP - Appels API et scrapping
+requests==2.32.3
+
+# Analyse HTML - Web scrapping
+beautifulsoup4==4.12.3

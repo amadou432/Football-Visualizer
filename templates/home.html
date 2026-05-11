@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>SoccerVisualizer</title>
+</head>
+<body>
+
+    <nav>
+        <div class="nav-content">
+            <span class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt=""> SoccerVisualizer</span>
+            <div class="nav-links">
+                <a href="/" class="nav-item active">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="league-filter-container">
+        <div class="league-filter-bar">
+            <button class="filter-btn active" onclick="filterLeague('all', this)">Tout</button>
+            <button class="filter-btn" onclick="filterLeague('Premier League', this)">Premier League</button>
+            <button class="filter-btn" onclick="filterLeague('Ligue 1', this)">Ligue 1</button>
+            <button class="filter-btn" onclick="filterLeague('La Liga', this)">La Liga</button>
+            <button class="filter-btn" onclick="filterLeague('Serie A', this)">Serie A</button>
+            <button class="filter-btn" onclick="filterLeague('Bundesliga', this)">Bundesliga</button>
+        </div>
+    </div>
+
+    <main class="container">
+        <header class="page-header">
+            <h1>Matchs du jour</h1>
+        </header>
+
+        <div class="match-grid" id="matchGrid">
+       {% for m in match %}
+        <a href="/match/{{ m.id_match }}" class="match-card" data-league="{{ m.nom_champi }}">
+            <div class="league-tag">{{ m.nom_champi }}</div>
+
+            <div class="match-content">
+                <div class="team">
+                    {% for e in equipe %}
+                        {% if e.id_equipe == m.id_equipe_dom %}
+                            <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
+                            <span>{{ e.nom_equipe }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="score-area">
+                    <span class="vs">VS</span>
+                    <span class="time">{{ m.heure if m.heure else '--:--' }}</span>
+                </div>
+                <div class="team">
+                    {% for e in equipe %}
+                        {% if e.id_equipe == m.id_equipe_ext %}
+                            <img src="{{ e.logo_equipe }}" alt="{{ e.nom_equipe }}">
+                            <span>{{ e.nom_equipe }}</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if m.cote %}
+                <div class="odds-row">
+                    <div class="odd-box">
+                        <span>1</span>
+                        <strong>{{ m.cote.cote_1 }}</strong>
+                        <strong>{{ m.cote.bookmaker_1 }}</strong>
+                    </div>
+                    <div class="odd-box">
+                        <span>N</span>
+                        <strong>{{ m.cote.cote_n }}</strong>
+                        <strong>{{ m.cote.bookmaker_n }}</strong>
+
+                    </div>
+                    <div class="odd-box">
+                        <span>2</span>
+                        <strong>{{ m.cote.cote_2 }}</strong>
+                        <strong>{{ m.cote.bookmaker_2 }}</strong>
+
+                    </div>
+                </div>
+            {% else %}
+                <div class="odds-row">
+                    <span class="no-odds">Cotes indisponibles</span>
+                </div>
+            {% endif %}
+
+        </a>  <!-- ← fermeture correcte -->
+        {% endfor %}
+        </div>
+
+    </main>
+
+    <script>
+        // =============================
+        // FILTRE PAR CHAMPIONNAT
+        // =============================
+        function filterLeague(league, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            document.querySelectorAll('.match-card').forEach(card => {
+                if (league === 'all' || card.dataset.league === league) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

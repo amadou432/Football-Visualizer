@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSG vs Marseille - Football Visualizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-content">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Football Visualizer">
+                <span>SOCCERVISUALIZER</span>
+            </div>
+
+            <div class="nav-links">
+                <a href="/" class="nav-item active">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <section class="match-hero-card">
+
+            <div class="hero-team">
+    <img src="{{ match.equipe_dom.logo_equipe }}" alt="{{ match.equipe_dom.nom_equipe }}">
+    <h2>{{ match.equipe_dom.nom_equipe }}</h2>
+</div>
+
+<div class="hero-score">
+    <p class="league-detail">{{ match.nom_champi }}</p>
+    <div class="big-vs">VS</div>
+    <div class="match-date-time">{{ match.heure }}</div>
+</div>
+
+<div class="hero-team">
+    <img src="{{ match.equipe_ext.logo_equipe }}" alt="{{ match.equipe_ext.nom_equipe }}">
+    <h2>{{ match.equipe_ext.nom_equipe }}</h2>
+</div>
+
+        </section>
+
+        <div class="odds-flex">
+            <div class="odd">
+                <span>1</span>
+                <strong>{{ match.cote.cote_1 if match.cote else 'N/A' }}</strong>
+            </div>
+            <div class="odd">
+                <span>N</span>
+                <strong>{{ match.cote.cote_n if match.cote else 'N/A' }}</strong>
+            </div>
+            <div class="odd">
+                <span>2</span>
+                <strong>{{ match.cote.cote_2 if match.cote else 'N/A' }}</strong>
+            </div>
+        </div>
+
+                <div class="info-card">
+                    <h3>🎯 Indice de Confiance</h3>
+                    <div class="trust-row">
+                        <span class="team-name">PSG</span>
+                        <div class="bar-container">
+                            <div class="bar home" style="width: 72%"></div>
+                        </div>
+                        <span class="val">72%</span>
+                    </div>
+                    <div class="trust-row">
+                        <span class="team-name">Marseille</span>
+                        <div class="bar-container">
+                            <div class="bar away" style="width: 28%"></div>
+                        </div>
+                        <span class="val">28%</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="details-column">
+                <div class="info-card">
+                    <h3>📊 Formes des Equipes</h3>
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <a href="/" class="back-link">← Revenir à la liste</a>
+
+    </main>
+
+    
+</body>
+</html>
