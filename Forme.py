@@ -1,85 +1,59 @@
 import requests
-import time
+from collections import defaultdict
 
 # ============================================================
 # CONFIG
 # ============================================================
-API_FOOTBALL_KEY = "29a980f4b9c56ba437b5f050b007ce69"
+
+API_KEY = "f970e9d659494d75ac4e7c73a7b75783"
+
 SUPABASE_URL = "https://deqthaukwlduxbsbmqgz.supabase.co"
 SUPABASE_KEY = "sb_publishable_QH_SEUy1i6Uc7QBtAQfr7Q_XeTOeDIK"
 
-CHAMPIONNATS = [
-    {"league_id": 39, "name": "Premier League", "season": 2024},
-    {"league_id": 61, "name": "Ligue 1", "season": 2024},
-    {"league_id": 140, "name": "La Liga", "season": 2024},
-    {"league_id": 135, "name": "Serie A", "season": 2024},
-    {"league_id": 78, "name": "Bundesliga", "season": 2024},
-]
+CHAMPIONNATS = {
+    "PL": "Premier League",
+    "FL1": "Ligue 1",
+    "PD": "La Liga",
+    "SA": "Serie A",
+    "BL1": "Bundesliga"
+}
 
-API_HEADERS = {
-    "x-rapidapi-host": "v3.football.api-sports.io",
-    "x-rapidapi-key": API_FOOTBALL_KEY
+HEADERS = {
+    "X-Auth-Token": API_KEY
 }
 
 SUPA_HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
     "Content-Type": "application/json",
-    "Prefer": "resolution=merge-duplicates"
+    "Prefer": "resolution=merge-duplicates"  
 }
 
+# ============================================================
+# API
+# ============================================================
 
-# ============================================================
-# API FOOTBALL
-# ============================================================
-def get_api(endpoint, params=None):
+def get_matches(competition_code):
     try:
-        r = requests.get(
-            f"https://v3.football.api-sports.io/{endpoint}",
-            headers=API_HEADERS,
-            params=params,
-            timeout=20
-        )
+        url = f"https://api.football-data.org/v4/competitions/{competition_code}/matches?season=2025"
+
+        r = requests.get(url, headers=HEADERS, timeout=30)
 
         if r.status_code != 200:
-            print(f" API ERROR {r.status_code}")
+            print("\n API ERROR", r.status_code)
             print(r.text[:300])
             return []
 
-        data = r.json()
-
-        if data.get("errors"):
-            print(" API ERROR :", data["errors"])
-            return []
-
-        return data.get("response", [])
+        return r.json().get("matches", [])
 
     except Exception as e:
-        print(" Exception API :", e)
+        print("\n Exception API :", e)
         return []
-
-
-def appels_restants():
-    try:
-        r = requests.get(
-            "https://v3.football.api-sports.io/status",
-            headers=API_HEADERS,
-            timeout=20
-        )
-
-        data = r.json().get("response", {})
-        current = data.get("requests", {}).get("current", 0)
-        limit = data.get("requests", {}).get("limit_day", 100)
-
-        return limit - current
-
-    except:
-        return 0
-
 
 # ============================================================
 # SUPABASE
 # ============================================================
+
 def envoyer_supabase(data):
     if not data:
         return True
@@ -89,149 +63,119 @@ def envoyer_supabase(data):
             f"{SUPABASE_URL}/rest/v1/forme_equipes",
             headers=SUPA_HEADERS,
             json=data,
-            timeout=20
+            timeout=30
         )
 
         if resp.status_code not in [200, 201]:
-            print(" SUPABASE :", resp.status_code, resp.text[:200])
+            print("\n SUPABASE :", resp.status_code)
+            print(resp.text[:300])
             return False
 
         return True
 
     except Exception as e:
-        print(" Exception Supabase :", e)
+        print("\n Exception Supabase :", e)
         return False
-
 
 # ============================================================
 # MAIN
 # ============================================================
-print("\n Lancement...\n")
 
-restants = appels_restants()
-print(f" Quota restant : {restants}/100")
-
-if restants <= 10:
-    print(" Pas assez d'appels API")
-    exit()
-
-print("\n Récupération des équipes...\n")
-
-toutes_equipes = []
-
-for champ in CHAMPIONNATS:
-    print(f"→ {champ['name']}")
-
-    equipes = get_api("teams", {
-        "league": champ["league_id"],
-        "season": champ["season"]
-    })
-
-    print(f"   {len(equipes)} équipes")
-
-    for e in equipes:
-        toutes_equipes.append({
-            "team_id": e["team"]["id"],
-            "team_name": e["team"]["name"],
-            "league": champ["name"],
-            "league_id": champ["league_id"],
-            "season": champ["season"]
-        })
-
-print(f"\n {len(toutes_equipes)} équipes récupérées")
-
-if not toutes_equipes:
-    print(" Aucune équipe")
-    exit()
-
-# quota sécurité
-max_teams = restants - 5
-toutes_equipes = toutes_equipes[:max_teams]
-
-print(f"\n Traitement de {len(toutes_equipes)} équipes...\n")
+print("\n🚀 Lancement...\n")
 
 total_insert = 0
 
-for i, equipe in enumerate(toutes_equipes):
-    team_id = equipe["team_id"]
-    team_name = equipe["team_name"]
-    league_id = equipe["league_id"]
-    season = equipe["season"]
+for code, league_name in CHAMPIONNATS.items():
 
-    print(f"[{i+1}/{len(toutes_equipes)}] {team_name}...", end=" ")
+    print("=" * 60)
+    print(f" {league_name}")
+    print("=" * 60)
 
-    # récupère les matchs du championnat seulement
-    matchs = get_api("fixtures", {
-        "team": team_id,
-        "league": league_id,
-        "season": season,
-        "status": "FT"
-    })
+    matchs = get_matches(code)
+
+    print(f" Matchs récupérés : {len(matchs)}")
 
     if not matchs:
-        print("aucun match")
         continue
 
-    # 5 derniers
-    derniers = sorted(
-        matchs,
-        key=lambda x: x["fixture"]["date"],
-        reverse=True
-    )[:5]
+    matchs_equipes = defaultdict(list)
 
-    forme_data = []
+    # regroupement équipes
+    for m in matchs:
 
-    for m in derniers:
-        home_id = m["teams"]["home"]["id"]
-        home_name = m["teams"]["home"]["name"]
-        away_name = m["teams"]["away"]["name"]
 
-        home_goals = m["goals"]["home"] or 0
-        away_goals = m["goals"]["away"] or 0
+        if m.get("status") != "FINISHED":
+            continue
 
-        est_domicile = (team_id == home_id)
+        home = m["homeTeam"]
+        away = m["awayTeam"]
 
-        if est_domicile:
-            buts_m = home_goals
-            buts_e = away_goals
-            adversaire = away_name
+        matchs_equipes[home["id"]].append(m)
+        matchs_equipes[away["id"]].append(m)
+
+    # traitement équipes
+    for team_id, liste_matchs in matchs_equipes.items():
+
+        derniers = sorted(
+            liste_matchs,
+            key=lambda x: x["utcDate"],
+            reverse=True
+        )[:5]
+
+        forme_data = []
+        team_name = ""
+
+        for m in derniers:
+
+            home = m["homeTeam"]
+            away = m["awayTeam"]
+
+            score = m.get("score", {}).get("fullTime", {})
+
+            score_home = score.get("home") or 0
+            score_away = score.get("away") or 0
+
+            est_domicile = (team_id == home["id"])
+
+            if est_domicile:
+                team_name = home["name"]
+                buts_m = score_home
+                buts_e = score_away
+                adversaire = away["name"]
+            else:
+                team_name = away["name"]
+                buts_m = score_away
+                buts_e = score_home
+                adversaire = home["name"]
+
+            if buts_m > buts_e:
+                resultat = "W"
+            elif buts_m == buts_e:
+                resultat = "D"
+            else:
+                resultat = "L"
+
+            forme_data.append({
+                "id_equipe": team_id,
+                "team_name": team_name,
+                "match_id": m["id"],
+                "date": m["utcDate"][:10],
+                "buts_marques": buts_m,
+                "buts_encaisses": buts_e,
+                "resultat": resultat,
+                "domicile": est_domicile,
+                "adversaire": adversaire
+            })
+
+        ok = envoyer_supabase(forme_data)
+
+        if ok:
+            total_insert += len(forme_data)
+            print(f" {team_name} → OK ({len(forme_data)} matchs)")
         else:
-            buts_m = away_goals
-            buts_e = home_goals
-            adversaire = home_name
+            print(f" Insert KO {team_name}")
 
-        if buts_m > buts_e:
-            resultat = "W"
-        elif buts_m == buts_e:
-            resultat = "D"
-        else:
-            resultat = "L"
-
-        forme_data.append({
-            "team_id": team_id,
-            "team_name": team_name,
-            "match_id": m["fixture"]["id"],
-            "date": m["fixture"]["date"][:10],
-            "buts_marques": buts_m,
-            "buts_encaisses": buts_e,
-            "resultat": resultat,
-            "domicile": est_domicile,
-            "adversaire": adversaire
-        })
-
-    ok = envoyer_supabase(forme_data)
-
-    if ok:
-        total_insert += len(forme_data)
-        forme = " ".join([x["resultat"] for x in forme_data])
-        print(f" {forme}")
-    else:
-        print(" insert KO")
-
-    time.sleep(0.3)
-
-print("\n" + "=" * 50)
+print("\n" + "=" * 60)
 print(" TERMINÉ")
-print("Équipes traitées :", len(toutes_equipes))
-print("Lignes insérées :", total_insert)
-print("=" * 50)
+print(f" Lignes insérées : {total_insert}")
+print("=" * 60)
