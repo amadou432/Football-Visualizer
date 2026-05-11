@@ -81,11 +81,34 @@
             </div>
 
             <div class="details-column">
-                <div class="info-card">
-                    <h3>📊 Formes des Equipes</h3>
-                    <canvas id="radarChart"></canvas>
-                </div>
+    <div class="info-card">
+    <h3>📊 Formes des Equipes</h3>
+    
+    <p class="form-equipe-label">{{ match.equipe_dom.nom_equipe }}</p>
+    <div class="form-row">
+        {% for f in match.forme_dom %}
+            <div class="form-item">
+                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
+                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
             </div>
+        {% endfor %}
+    </div>
+
+    <p class="form-equipe-label">{{ match.equipe_ext.nom_equipe }}</p>
+    <div class="form-row">
+        {% for f in match.forme_ext %}
+            <div class="form-item">
+                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
+                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+<div class="info-card">
+    <h3>📈 Radar de Performance</h3>
+    <canvas id="radarChart"></canvas>
+</div>
 
         </div>
 

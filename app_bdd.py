@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from datetime import date
 
 load_dotenv()
 
@@ -29,7 +30,7 @@ def recup_cote():
 
 def recup_forme_equipe():
     forme = supabase.table("forme_equipes").select(
-        "id_equipe, team_name, match_id, Date, buts_marques, but_encaisses, Résultat, Domicile, Adversaire"
+        "id_equipe, team_name, match_id, date, buts_marques, buts_encaisses, resultat, domicile, adversaire"
     ).execute()
     return forme.data
 
@@ -38,7 +39,7 @@ def afficher_matchs_bdd():
     try:
         response = supabase.table("match").select(
             "id_match, date_match, heure, nom_champi, id_equipe_dom, id_equipe_ext"
-        ).execute()
+        ).gte("date_match", str(date.today())).execute()
         match_bdd = response.data
         equipes = recup_toutes_equipes()
         cote = recup_cote()
@@ -76,16 +77,26 @@ def afficher_match(id):
 
         cotes = recup_cote()
         cotes_par_match = {c["id_match"]: c for c in cotes}
-        forme = recup_forme_equipe()
+        forme = recup_forme_equipe()  # ← déjà là
 
         if match:
             match['equipe_dom'] = equipes.get(match['id_equipe_dom'], {})
             match['equipe_ext'] = equipes.get(match['id_equipe_ext'], {})
-            match['cote'] = cotes_par_match.get(match['id_match'], {})  
+            match['cote'] = cotes_par_match.get(match['id_match'], {})
+            
+            forme_dom = [f for f in forme if f['id_equipe'] == match['id_equipe_dom']][-5:]
+            forme_ext = [f for f in forme if f['id_equipe'] == match['id_equipe_ext']][-5:]
+            
+            match['forme_dom'] = forme_dom
+            match['forme_ext'] = forme_ext
+            print("FORME DOM :", match['forme_dom'])
+            print("FORME EXT :", match['forme_ext'])
+            print("ID EQUIPE DOM :", match['id_equipe_dom'])
 
     except Exception as e:
         print(f"Erreur : {e}")
         match = None
+        forme = []  # ← ajoute ça
 
     return render_template("match.html", match=match, forme=forme)
 if __name__ == '__main__':
