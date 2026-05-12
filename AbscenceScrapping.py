@@ -7,7 +7,8 @@ SUPABASE_KEY = "sb_secret_xv1e1Yjbv5eJ6rVcWQPbUQ_IQQpN8r2"
 
 HEADERS_SUPA = {
     "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}"
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json"
 }
 
 CHAMPIONNATS_TM = {
@@ -20,13 +21,6 @@ CHAMPIONNATS_TM = {
 
 headers_tm = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-}
-
-mois = {
-    "janv.": "01", "févr.": "02", "mars": "03",
-    "avr.": "04", "mai": "05", "juin": "06",
-    "juil.": "07", "août": "08", "sept.": "09",
-    "oct.": "10", "nov.": "11", "déc.": "12"
 }
 
 aujourd_hui = datetime.now()
@@ -80,36 +74,13 @@ else:
             logo_club = ligne.find("img", class_="tiny_wappen")
             club = logo_club["alt"] if logo_club else "Inconnu"
 
-            dates = ligne.find_all("td", class_="zentriert")
-            date_retour_texte = dates[-1].text.strip() if dates else ""
-
-            absent = False
-            date_affichee = "Pas de date retrouvée"
-
-            if not date_retour_texte:
-                absent = True
-            else:
-                try:
-                    texte = date_retour_texte
-                    for fr, num in mois.items():
-                        texte = texte.replace(fr, num)
-                    date_retour = datetime.strptime(texte, "%d %m %Y")
-                    if date_retour >= aujourd_hui:
-                        absent = True
-                        date_affichee = date_retour_texte
-                except:
-                    absent = True
-
-            if absent and club in equipes_du_jour:
+            if club in equipes_du_jour:
                 if club not in absents_par_equipe:
                     absents_par_equipe[club] = []
-                absents_par_equipe[club].append({
-                    "nom": nom,
-                    "date": date_affichee
-                })
+                absents_par_equipe[club].append(nom)
 
-    # --- ÉTAPE 3 : Affichage par match ---
-    print("\n--- ABSENTS PAR MATCH ---")
+    # --- ÉTAPE 3 : Insertion des joueurs absents dans la BDD ---
+    print("\n--- ENVOI DES NOUVEAUX JOUEURS ABSENTS ---")
     for match in matchs:
         res_dom = requests.get(f"{SUPABASE_URL}/rest/v1/equipe?id_equipe=eq.{match['id_equipe_dom']}", headers=HEADERS_SUPA).json()
         res_ext = requests.get(f"{SUPABASE_URL}/rest/v1/equipe?id_equipe=eq.{match['id_equipe_ext']}", headers=HEADERS_SUPA).json()
@@ -117,13 +88,33 @@ else:
         dom = res_dom[0]["nom_equipe"] if res_dom else "Inconnu"
         ext = res_ext[0]["nom_equipe"] if res_ext else "Inconnu"
 
-        print(f"\n{match['nom_champi']} | {dom} vs {ext}")
+        infos_match_equipes = [
+            {"nom": dom, "id": match['id_equipe_dom']},
+            {"nom": ext, "id": match['id_equipe_ext']}
+        ]
 
-        for equipe in [dom, ext]:
-            absents = absents_par_equipe.get(equipe, [])
+        for eq in infos_match_equipes:
+            if eq["nom"] == "Inconnu":
+                continue
+                
+            absents = absents_par_equipe.get(eq["nom"], [])
             if absents:
-                print(f"  Absents {equipe} :")
-                for j in absents:
-                    print(f"      {j['nom']} — {j['date']}")
+                for joueur in absents:
+                    # Payload ajusté exactement selon ton image :
+                    # 'nom' prend la valeur complète, 'prenom' reste vide, 'id_equipe' et 'absent' sont fournis
+                    payload = {
+                        "nom": joueur,
+                        "prenom": "",
+                        "id_equipe": eq["id"],
+                        "absent": True
+                    }
+                    
+                    url_insert = f"{SUPABASE_URL}/rest/v1/joueur"
+                    res_insert = requests.post(url_insert, headers=HEADERS_SUPA, json=payload)
+                    
+                    if res_insert.status_code in [200, 201, 204]:
+                        print(f"   {joueur} ({eq['nom']}) inséré dans la table joueur.")
+                    else:
+                        print(f"   Erreur d'insertion pour {joueur}: {res_insert.status_code}")
             else:
-                print(f"  Aucun absent connu pour {equipe}")
+                print(f"  Aucun absent à ajouter pour {eq['nom']}")
