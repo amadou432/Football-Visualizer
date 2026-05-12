@@ -22,6 +22,10 @@ def recup_toutes_equipes():
     
     return equipes1.data + equipes2.data
 
+def recup_absent():
+    absent = supabase.table("absent").select("nom_joueur, id_equipe, date_retour ").execute()
+    return absent.data
+
 def recup_cote():
     cote = supabase.table("cote").select(
         "id_cote, cote_1, cote_n, cote_2, id_match, bookmaker_1, bookmaker_n, bookmaker_2"
@@ -52,15 +56,10 @@ def afficher_matchs_bdd():
         print(f"Erreur : {e}")
         match_bdd = []
         equipes = []
-        # Filtrer les matchs qui ont bien les deux équipes
         match_bdd = [m for m in match_bdd if m['id_equipe_dom'] and m['id_equipe_ext']]
-    print("PREMIER MATCH COTE :", match_bdd[0].get('cote'))
-    cotes_par_match = {c["id_match"]: c for c in cote}
-    print("NOMBRE COTES :", len(cotes_par_match))
+        cotes_par_match = {c["id_match"]: c for c in cote}
     for m in match_bdd:
         m["cote"] = cotes_par_match.get(m["id_match"], {})
-    print("IDS COTES :", list(cotes_par_match.keys())[:5])
-    print("IDS MATCHS :", [m["id_match"] for m in match_bdd[:5]])
     return render_template("home.html", match=match_bdd, equipe=equipes, cote=cote)
 
 
@@ -77,7 +76,10 @@ def afficher_match(id):
 
         cotes = recup_cote()
         cotes_par_match = {c["id_match"]: c for c in cotes}
-        forme = recup_forme_equipe()  # ← déjà là
+        forme = recup_forme_equipe()  
+
+        absent = recup_absent()
+
 
         if match:
             match['equipe_dom'] = equipes.get(match['id_equipe_dom'], {})
@@ -89,15 +91,17 @@ def afficher_match(id):
             
             match['forme_dom'] = forme_dom
             match['forme_ext'] = forme_ext
-            print("FORME DOM :", match['forme_dom'])
-            print("FORME EXT :", match['forme_ext'])
-            print("ID EQUIPE DOM :", match['id_equipe_dom'])
+
+            match['absents_dom'] = [a for a in absent if a['id_equipe'] == match['id_equipe_dom']]
+            match['absents_ext'] = [a for a in absent if a['id_equipe'] == match['id_equipe_ext']]
+
 
     except Exception as e:
         print(f"Erreur : {e}")
         match = None
-        forme = []  # ← ajoute ça
+        forme = []  
+        absent = []
 
-    return render_template("match.html", match=match, forme=forme)
+    return render_template("match.html", match=match, forme=forme, absent=absent)
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
