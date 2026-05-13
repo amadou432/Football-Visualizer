@@ -30,13 +30,19 @@
 
     <main class="container">
         <header class="page-header">
-            <h1>Matchs du jour</h1>
+            <h1>Matchs à venir</h1>
         </header>
 
         <div class="match-grid" id="matchGrid">
        {% for m in match %}
         <a href="/match/{{ m.id_match }}" class="match-card" data-league="{{ m.nom_champi }}">
-            <div class="league-tag">{{ m.nom_champi }}</div>
+            <div class="league-tag">
+                {{ m.nom_champi }}
+
+                <span class="date">{{ m.date_match if m.date_match else '--/--/----' }}</span>
+            </div>
+
+            
 
             <div class="match-content">
                 <div class="team">
