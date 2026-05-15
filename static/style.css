@@ -279,7 +279,11 @@ h1 {
 }
 
 /* COTES */
-.odds-flex { display: flex; gap: 10px; }
+.odds-flex { 
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+ }
 .odd {
     background: var(--bg-dark);
     flex: 1;
