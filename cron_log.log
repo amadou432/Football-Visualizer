@@ -10,3 +10,6 @@ Traceback (most recent call last):
   File "/Applications/Python 3.14/SoccerVisualizer/absencescraping.py", line 1, in <module>
     import requests
 ModuleNotFoundError: No module named 'requests'
+--- Récupération des cotes pour le 2026-05-15 ---
+Pas de cotes disponibles aujourd'hui.
+--- Fin du script ---
