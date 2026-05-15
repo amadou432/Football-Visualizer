@@ -392,3 +392,69 @@ h1 {
     margin-bottom: 8px;
     margin-top: 12px;
 }
+/* --- SECTION ABSENTS CHIC --- */
+
+/* Titre de l'équipe dans la liste des absents */
+.absent-team-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 15px 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #334155;
+    display: block;
+}
+
+/* Conteneur d'un joueur absent */
+.absent-player-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: rgba(15, 23, 42, 0.4); /* Un peu plus sombre que la carte */
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    transition: 0.3s;
+}
+
+.absent-player-card:hover {
+    border-color: var(--accent);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+/* Image du joueur */
+.absent-player-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #334155;
+}
+
+/* Infos texte à côté de l'image */
+.absent-player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.absent-player-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.absent-player-return {
+    font-size: 0.75rem;
+    color: var(--accent);
+    font-weight: 500;
+}
+
+/* État "Aucun absent" */
+.no-absent {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-style: italic;
+    padding-left: 10px;
+}
