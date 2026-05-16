@@ -38,7 +38,7 @@ def recup_cote():
  
 def recup_forme_equipe():
     forme = supabase.table("forme_equipes").select(
-        "id_equipe, team_name, match_id, date, buts_marques, buts_encaisses, resultat, domicile, adversaire"
+        "id_equipe, team_name, match_id, date, buts_marques, buts_encaisses, domicile, adversaire"
     ).execute()
     return forme.data
  
