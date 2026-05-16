@@ -24,6 +24,9 @@
     <main class="container">
         <!-- En-tête du match -->
         <section class="match-hero-card">
+            <div class="league-tag">
+                <span class="date">{{ match.date_match if match.date_match else '--/--/----' }}</span>
+            </div>
             <div class="hero-team">
                 <img src="{{ match.equipe_dom.logo_equipe }}" alt="{{ match.equipe_dom.nom_equipe }}">
                 <h2>{{ match.equipe_dom.nom_equipe }}</h2>
@@ -42,11 +45,26 @@
         </section>
 
         <!-- Section des Cotes -->
-        <div class="odds-flex">
-            <div class="odd"><span>1</span><strong>{{ match.cote.cote_1 or 'N/A' }}</strong></div>
-            <div class="odd"><span>N</span><strong>{{ match.cote.cote_n or 'N/A' }}</strong></div>
-            <div class="odd"><span>2</span><strong>{{ match.cote.cote_2 or 'N/A' }}</strong></div>
+        <div class="info-card">
+    <h3>💰 Cotes 1N2</h3>
+    <div class="odds-flex">
+        <div class="odd">
+            <span>1</span>
+            <strong>{{ match.cote.cote_1 if match.cote else 'N/A' }}</strong>
+            <span class="bookmaker">{{ match.cote.bookmaker_1 if match.cote else '' }}</span>
         </div>
+        <div class="odd">
+            <span>N</span>
+            <strong>{{ match.cote.cote_n if match.cote else 'N/A' }}</strong>
+            <span class="bookmaker">{{ match.cote.bookmaker_n if match.cote else '' }}</span>
+        </div>
+        <div class="odd">
+            <span>2</span>
+            <strong>{{ match.cote.cote_2 if match.cote else 'N/A' }}</strong>
+            <span class="bookmaker">{{ match.cote.bookmaker_2 if match.cote else '' }}</span>
+        </div>
+    </div>
+</div>
 
         <!-- Grille de détails (2 colonnes) -->
         <div class="details-grid">
