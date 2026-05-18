@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 
 # --- CONFIGURATION ---
-API_KEY = "4699e04f58328f5c4e16bad40d5cdb27" 
+API_KEY = "4699e04f58328f5c4e16bad40d5cdb27" #Clé utilisé pour APIfootball 
 SUPABASE_URL = "https://deqthaukwlduxbsbmqgz.supabase.co"
 SUPABASE_KEY = "sb_secret_xv1e1Yjbv5eJ6rVcWQPbUQ_IQQpN8r2"
 
@@ -61,12 +61,14 @@ else:
             "id_equipe_ext": match["teams"]["away"]["id"],
         })
 
-    liste_equipes_final = list(equipes_dict.values())
+    liste_equipes_final = list(equipes_dict.values()) #sert a convertir un dictionnaire en liste.
+
+    #.values() extrait juste les valeurs du dictionnaire sans les clés (les IDs)
 
     # --- 3. ENVOI À SUPABASE ---
     print("Envoi en cours vers Supabase...")
     
-    requests.post(f"{SUPABASE_URL}/rest/v1/equipe", headers=HEADERS_SUPA, json=liste_equipes_final)
+    requests.post(f"{SUPABASE_URL}/rest/v1/equipe", headers=HEADERS_SUPA, json=liste_equipes_final)  # On envoie les données à l'adresse de la table "equipe" dans Supabase
     
     res = requests.post(f"{SUPABASE_URL}/rest/v1/match", headers=HEADERS_SUPA, json=liste_matchs)
 
