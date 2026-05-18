@@ -14,13 +14,14 @@ HEADERS_SUPA = {
 }
 
 HEADERS_API = {
-    "X-Auth-Token": API_KEY
+    "X-Auth-Token": API_KEY #dictionnaire d'identification qu'on envoie à 
+                           # Football-Data.org pour prouver qu'on a le droit d'accéder à leurs données.
 }
 
 # Codes des 5 grands championnats sur Football-Data
 LIGUES_CODES = ["PL", "FL1", "PD", "SA", "BL1"]
 
-# Dictionnaire de traduction en français (sans émoji pour la base de données)
+# Dictionnaire de traduction en français 
 TRADUCTION_CHAMPIONNATS = {
     "Premier League": "Premier League",
     "Ligue 1": "Ligue 1",
@@ -80,7 +81,7 @@ else:
 
             # Traduction du championnat pour qu'il s'insère proprement
             nom_original = match["competition"]["name"]
-            nom_français = TRADUCTION_CHAMPIONNATS.get(nom_original, nom_original)
+            nom_français = TRADUCTION_CHAMPIONNATS.get(nom_original, nom_original) #  .get récupère la valeur et retourne None si la clé n'existe pas
 
             # Extraction des équipes (pour éviter les doublons dans le dictionnaire)
             for side in ["homeTeam", "awayTeam"]:
