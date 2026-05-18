@@ -1,0 +1,22 @@
+name: Scripts automatiques
+on:
+  schedule:
+    - cron: '0 0 * * *'    # 2h heure française
+    - cron: '0 12 * * *'   # 14h heure française
+    - cron: '0 18 * * *'   # 20h heure française
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install requests beautifulsoup4 supabase python-dotenv
+      - name: Cotes
+        if: github.event.schedule == '0 0 * * *' || github.event.schedule == '0 12 * * *'
+        run: python recup_cote.py
+      - name: Absents
+        if: github.event.schedule == '0 18 * * *'
+        run: python absencescraping.py
