@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 
 # --- CONFIGURATION ---
-API_KEY = "4699e04f58328f5c4e16bad40d5cdb27" #Clé utilisé pour APIfootball 
+API_KEY = "4699e04f58328f5c4e16bad40d5cdb27" #Clé utilisé pour APIfootball
 SUPABASE_URL = "https://deqthaukwlduxbsbmqgz.supabase.co"
 SUPABASE_KEY = "sb_secret_xv1e1Yjbv5eJ6rVcWQPbUQ_IQQpN8r2"
 

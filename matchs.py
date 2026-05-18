@@ -15,7 +15,7 @@ HEADERS_SUPA = {
 
 HEADERS_API = {
     "X-Auth-Token": API_KEY #dictionnaire d'identification qu'on envoie à 
-                           # Football-Data.org pour prouver qu'on a le droit d'accéder à leurs données.
+                           #Football-Data.org pour prouver qu'on a le droit d'accéder à leurs données 
 }
 
 # Codes des 5 grands championnats sur Football-Data
