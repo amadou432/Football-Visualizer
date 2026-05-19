@@ -66,15 +66,12 @@
     </div>
 </div>
 
-        <!-- Grille de détails (2 colonnes) -->
         <div class="details-grid">
             
-            <!-- Colonne 1 : Absents et Forme -->
             <div class="details-column">
                 <div class="info-card">
                     <h3>🚑 Joueurs Absents</h3>
                     
-                    <!-- Domicile -->
                     <span class="absent-team-name">{{ match.equipe_dom.nom_equipe }}</span>
                     <div class="absents-list">
                         {% for j in absents_dom %}
@@ -90,7 +87,6 @@
                         {% endfor %}
                     </div>
 
-                    <!-- Extérieur -->
                     <span class="absent-team-name">{{ match.equipe_ext.nom_equipe }}</span>
                     <div class="absents-list">
                         {% for j in absents_ext %}
@@ -133,7 +129,6 @@
                 </div>
             </div>
 
-            <!-- Colonne 2 : Stats et Radar -->
             <div class="details-column">
                 <div class="info-card">
                     <h3>🎯 Indice de Confiance</h3>
