@@ -133,7 +133,7 @@ SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_KEY=ta_clé_anon_ici
 
 # 4. Lancer le serveur
-py -3.11 app.py
+py -3.11 app_bdd.py
 ```
 
 ### Accéder au site
