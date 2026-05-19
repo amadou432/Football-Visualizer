@@ -35,7 +35,7 @@ SUPA_HEADERS = {
 
 def get_matches(competition_code):
     try:
-        url = f"https://api.football-data.org/v4/competitions/{competition_code}/matches?season=2025"
+        url = f"https://api.football-data.org/v4/competitions/{competition_code}/matches?season=2025&status=FINISHED"
 
         r = requests.get(url, headers=HEADERS, timeout=30)
 
