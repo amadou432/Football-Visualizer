@@ -54,37 +54,34 @@ Football Visualizer affiche les matchs à venir des 5 grands championnats europ�
 
 ## 🗄️ Structure de la base de données
 
-```
-equipe          — Informations sur les équipes (nom, logo)
-match           — Matchs à venir (date, heure, championnat, équipes)
-cote            — Cotes 1/N/2 par bookmaker
-joueur          — Informations sur les joueurs
-forme_equipe    — Informations sur les matchs précèdents des equipes(buts marqués, buts encaissés,...)
-```
+L'application s'appuie sur une base de données PostgreSQL hébergée sur Supabase, structurée de la manière suivante :
+
+* **`match`** : Table centrale contenant le calendrier des matchs à venir (identifiant, date, heure du coup d'envoi, nom du championnat, ainsi que les clés étrangères associant l'équipe à domicile et l'équipe à l'extérieur).
+* **`equipe`** : Référentiel des clubs regroupant les informations signalétiques des équipes (nom officiel, URL du logo/blason).
+* **`cote`** : Table de comparaison des cotes de paris sportifs (1/N/2) mise à jour en temps réel avec identification des meilleures cotes et des bookmakers associés (Winamax, Betclic, Unibet, PMU...).
+* **`joueur`** : Base de données des joueurs utilisée pour générer et afficher les **compositions probables** des équipes avant le coup d'envoi.
+* **`forme_equipes`** : Table analytique mémorisant l'historique et l'état de forme récent des clubs (séries de matchs, buts marqués, buts encaissés).
+* **`moment_but`** : Table de distribution temporelle permettant d'analyser à quels moments d'un match (intervalles de minutes) les équipes ont tendance à marquer ou concéder des buts.
+* **`absent`** : Registre de suivi des indisponibilités (joueurs blessés, suspendus ou incertains pour les prochaines rencontres).
 
 ## 🔄 Récupération des données
 
-### Via API Football
+# 🔄 Récupération des données
 
-Les données des matchs et des cotes sont récupérées automatiquement via **API Football** (plan gratuit — 100 requêtes/jour).
+Les données de l'application sont centralisées automatiquement en combinant deux API distinctes afin de respecter les quotas des plans gratuits :
 
-**Ce qu'on récupère :**
+### 📅 Calendrier & Matchs (Via Football-Data.org)
+Les informations concernant le calendrier et les équipes sont récupérées via l'API **Football-Data.org** :
+* La liste des matchs à venir pour les 5 grands championnats européens (couvrant une fenêtre de J à J+9).
+* Les informations signalétiques des clubs (noms officiels et URLs des logos/blasons).
 
-- Liste des matchs du jour pour les 5 grands championnats
-- Meilleures cotes 1/N/2 avec le nom du bookmaker
-- Logos et informations des équipes
+### 📊 Cotes & Bookmakers (Via The Odds API)
+Les données de paris sportifs sont récupérées via **The Odds API** (plan gratuit) :
+* Les cotes 1/N/2 du marché français mis à jour en temps réel.
+* Le filtrage et l'extraction de la meilleure cote disponible associée au nom de son bookmaker (Winamax, Betclic, Unibet, PMU...).
 
-**Fonctionnement :**
-API Football → Script Python → Supabase (stockage) → Site web (affichage)
-Les données sont récupérées de deux façons différentes :
-
-### Via API Football
-
-Certaines données sont récupérées automatiquement via **API Football** (plan gratuit — 100 requêtes/jour) :
-
-- La liste des matchs du jour pour les 5 grands championnats
-- Les meilleures cotes 1/N/2 avec le nom du bookmaker associé
-
+**Flux de fonctionnement :**
+Football-Data.org + The Odds API ➔ Scripts Python (Filtrage & Mapping) ➔ Supabase (Stockage) ➔ Site Web (Affichage)
 ### Via Web Scrapping
 
 D'autres données sont récupérées par **web scrapping** sur des sites de référence comme **Transfermarkt** et **Flashscore** :
@@ -136,7 +133,7 @@ SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_KEY=ta_clé_anon_ici
 
 # 4. Lancer le serveur
-py -3.11 app.py
+py -3.11 app_bdd.py
 ```
 
 ### Accéder au site
