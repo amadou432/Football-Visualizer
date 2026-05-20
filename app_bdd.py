@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date, datetime
  
 load_dotenv()
  
@@ -42,6 +42,12 @@ def recup_forme_equipe():
     ).execute()
     return forme.data
  
+def date_fr(date_str):
+    if not date_str:
+        return '--/--/----'
+    
+    date = datetime.strptime(date_str, "%Y-%m-%d")
+    return date.strftime("%d-%m-%Y")
  
 @app.route('/')
 def afficher_matchs_bdd():
@@ -63,6 +69,7 @@ def afficher_matchs_bdd():
         cotes_par_match = {c["id_match"]: c for c in cote}
         for m in match_bdd:
             m["cote"] = cotes_par_match.get(m["id_match"], {})
+            m["date_match"] = date_fr(m["date_match"])
  
     except Exception as e:
         print(f"Erreur : {e}")
@@ -104,6 +111,8 @@ def afficher_match(id):
             # FIX : variables séparées pour le template
             absents_dom = [a for a in absent if a['id_equipe'] == match['id_equipe_dom']]
             absents_ext = [a for a in absent if a['id_equipe'] == match['id_equipe_ext']]
+            match["date_match"] = date_fr(match["date_match"])
+            
  
     except Exception as e:
         print(f"Erreur : {e}")
