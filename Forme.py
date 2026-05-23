@@ -35,7 +35,7 @@ SUPA_HEADERS = {
 
 def get_matches(competition_code):
     try:
-        url = f"https://api.football-data.org/v4/competitions/{competition_code}/matches?season=2025"
+        url = f"https://api.football-data.org/v4/competitions/{competition_code}/matches?season=2025&status=FINISHED"
 
         r = requests.get(url, headers=HEADERS, timeout=30)
 
@@ -157,8 +157,8 @@ for code, league_name in CHAMPIONNATS.items():
 
             forme_data.append({
                 "id_equipe": team_id,
-                "team_name": team_name,
-                "match_id": m["id"],
+                "nom_equipe": team_name,
+                "id_match": m["id"],
                 "date": m["utcDate"][:10],
                 "buts_marques": buts_m,
                 "buts_encaisses": buts_e,

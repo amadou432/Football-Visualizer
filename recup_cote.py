@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 
 # --- CONFIGURATION DES CLÉS ---
-ODDS_API_KEY = "d914452a154bb6476d95f243508d2591"
+ODDS_API_KEY = "d914452a154bb6476d95f243508d2591" #API DE the odds API
 SUPABASE_URL = "https://deqthaukwlduxbsbmqgz.supabase.co"
 SUPABASE_KEY = "sb_secret_xv1e1Yjbv5eJ6rVcWQPbUQ_IQQpN8r2"
 
@@ -10,160 +10,156 @@ HEADERS_SUPA = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
     "Content-Type": "application/json",
-    "Prefer": "resolution=merge-duplicates"  # Évite les doublons et met à jour la cote
+    "Prefer": "resolution=merge-duplicates"
 }
 
-# Les 5 grands championnats avec les bonnes clés de l'API v4
 CHAMPIONNATS = {
     "soccer_epl": "Premier League",
-    "soccer_france_ligue_one": "Ligue 1",
     "soccer_spain_la_liga": "La Liga",
+    "soccer_france_ligue_one": "Ligue 1",
     "soccer_italy_serie_a": "Serie A",
     "soccer_germany_bundesliga": "Bundesliga"
 }
 
-date_du_jour = datetime.now().strftime('%Y-%m-%d')
-print(f"=== COMPARATEUR DU TOP DES BOOKMAKERS FR ({date_du_jour}) ===")
+# Mapping de secours pour les chaînes de texte
+DICTIONNAIRE_MAPPING = {
+    "Tottenham Hotspur": "Tottenham Hotspur FC",
+    "Athletic Bilbao": "Athletic Club",
+    "Atletico Madrid": "Atlético de Madrid",
+    "Real Sociedad": "Real Sociedad de Fútbol",
+    "Espanyol": "RCD Espanyol de Barcelona",
+    "Inter Milan": "FC Internazionale Milano"
+}
 
-# --- ÉTAPE 1 : Récupérer les matchs et équipes depuis Supabase ---
-res_matchs = requests.get(
-    f"{SUPABASE_URL}/rest/v1/match?date_match=gte.{date_du_jour}",
-    headers=HEADERS_SUPA
-)
+def nettoyer_nom(nom):
+    if not nom or not isinstance(nom, str):
+        return ""
+    nom = nom.lower().strip()
+    parasites = [
+        "fc", "cf", "afc", "rc", "as", "ssc", "ac", "us", "ud", "ca", "the", "club", 
+        "stade", "olympique", "de", "di", "san", "saint", "fútbol", "futbol", "rcd"
+    ]
+    mots = nom.replace("-", " ").split()
+    mots_filtres = [m for m in mots if m not in parasites]
+    return " ".join(mots_filtres).strip()
+
+def correspondent(nom_api, nom_bdd):
+    if nom_api in DICTIONNAIRE_MAPPING:
+        if DICTIONNAIRE_MAPPING[nom_api] == nom_bdd:
+            return True
+
+    api_clean = nettoyer_nom(nom_api)
+    bdd_clean = nettoyer_nom(nom_bdd)
+    
+    if not api_clean or not bdd_clean:
+        return False
+        
+    if (api_clean == bdd_clean) or (api_clean in bdd_clean) or (bdd_clean in api_clean):
+        return True
+        
+    mots_api = api_clean.split()
+    mots_bdd = bdd_clean.split()
+    if mots_api and mots_bdd and (mots_api[0] == mots_bdd[0]):
+        return True
+        
+    return False
+
+date_du_jour = datetime.now().strftime('%Y-%m-%d')
+print(f"--- DÉBUT DE SYNCHRONISATION ({date_du_jour}) ---")
+
+# 1. JOINTURE DIRECTE : On demande à Supabase d'inclure les noms des équipes
+# ATTENTION : Si tes colonnes de liaison s'appellent id_equipe_dom et id_equipe_ext, Supabase fait la jointure tout seul avec la syntaxe ci-dessous
+url_jointure = f"{SUPABASE_URL}/rest/v1/match?select=id_match,date_match,id_equipe_dom(nom_equipe),id_equipe_ext(nom_equipe)&date_match=gte.{date_du_jour}"
+res_matchs = requests.get(url_jointure, headers=HEADERS_SUPA)
 matchs_bdd = res_matchs.json()
 
-if not matchs_bdd:
-    print(" Aucun match à venir trouvé dans Supabase. Exécute d'abord le script de tes matchs !")
-else:
-    print(f" {len(matchs_bdd)} matchs récupérés depuis Supabase. Analyse des cotes...")
+if not isinstance(matchs_bdd, list):
+    print(" Erreur de structure Supabase ou colonnes de clés étrangères mal nommées.")
+    print(matchs_bdd)
+    exit()
 
-    # Chargement des équipes pour pouvoir associer les IDs de ta BDD aux cotes
-    res_equipes = requests.get(
-        f"{SUPABASE_URL}/rest/v1/equipe",
-        headers=HEADERS_SUPA
+print(f"[BDD] {len(matchs_bdd)} matchs à venir récupérés.")
+
+dictionnaire_cotes_uniques = {}
+
+# 2. Interrogation de l'API
+for sport_key, nom_champi in CHAMPIONNATS.items():
+    response = requests.get(
+        f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/",
+        params={"apiKey": ODDS_API_KEY, "regions": "fr", "markets": "h2h", "oddsFormat": "decimal"}
     )
-    equipes = {e["id_equipe"]: e["nom_equipe"] for e in res_equipes.json()}
 
-    liste_cotes_finales = []
+    if response.status_code != 200:
+        continue
 
-    # --- ÉTAPE 2 : Analyse des cotes championnat par championnat ---
-    for sport_key, nom_champi in CHAMPIONNATS.items():
-        response = requests.get(
-            f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/",
-            params={
-                "apiKey": ODDS_API_KEY,
-                "regions": "eu",
-                "markets": "h2h",
-                "oddsFormat": "decimal"
-            }
-        )
+    matchs_odds = response.json()
 
-        if response.status_code != 200:
-            print(f"   Erreur sur le championnat {nom_champi} (Code {response.status_code})")
-            continue
+    for match_odd in matchs_odds:
+        dom_api = match_odd["home_team"]
+        ext_api = match_odd["away_team"]
+        date_api = match_odd["commence_time"][:10]
+        
+        id_match_bdd = None
 
-        matchs_odds = response.json()
-
-        for match_odd in matchs_odds:
-            equipe_dom_api = match_odd["home_team"]
-            equipe_ext_api = match_odd["away_team"]
-            date_match_api = match_odd["commence_time"][:10]
-
-            # Recherche intelligente du match correspondant dans Supabase
-            id_match = None
-            for m in matchs_bdd:
-                if m["date_match"] == date_match_api:
-                    nom_dom_bdd = equipes.get(m["id_equipe_dom"], "")
-                    nom_ext_bdd = equipes.get(m["id_equipe_ext"], "")
-
-                    # Vérification souple pour contourner les écarts d'écriture ("FC", tirets, etc.)
-                    if (equipe_dom_api in nom_dom_bdd or nom_dom_bdd in equipe_dom_api) or \
-                       (equipe_dom_api.split()[0] == nom_dom_bdd.split()[0]):
-                        if (equipe_ext_api in nom_ext_bdd or nom_ext_bdd in equipe_ext_api) or \
-                           (equipe_ext_api.split()[0] == nom_ext_bdd.split()[0]):
-                            id_match = m["id_match"]
-                            break
-
-            # Si le match n'est pas dans ta BDD, on passe au suivant
-            if not id_match:
+        for m in matchs_bdd:
+            # Extraction des noms d'équipes récupérés via la jointure Supabase
+            try:
+                nom_dom_bdd = m["id_equipe_dom"]["nom_equipe"]
+                nom_ext_bdd = m["id_equipe_ext"]["nom_equipe"]
+            except (TypeError, KeyError):
+                # Si la jointure échoue parce que le nom de la table est différent, on passe
                 continue
 
-            # Initialisation des meilleures cotes pour ce match
-            best_1, bookie_1 = 0.0, ""
-            best_n, bookie_n = 0.0, ""
-            best_2, bookie_2 = 0.0, ""
+            date_bdd = m["date_match"]
 
-            # On parcourt les bookmakers renvoyés par l'API
-            for bookie in match_odd["bookmakers"]:
-                key_bookie = bookie["key"].lower()
-                
-                # --- FILTRE SOUPLE ET INTELLIGENT ---
-                # On valide si la clé contient un opérateur agréé en France
-                est_un_bookie_fr = False
-                if "winamax" in key_bookie:
-                    est_un_bookie_fr = True
-                elif "betclic" in key_bookie:
-                    est_un_bookie_fr = True
-                elif "pmu" in key_bookie:
-                    est_un_bookie_fr = True
-                elif "unibet" in key_bookie:
-                    # On évite les déclinaisons étrangères (UK, NL, SE, IT...)
-                    if not any(pays in key_bookie for pays in ["_uk", "_nl", "_se", "_it", "_au", "_us"]):
-                        est_un_bookie_fr = True
+            # Tolérance de 5 jours pour caler l'API et ta BDD
+            if abs((datetime.strptime(date_api, '%Y-%m-%d') - datetime.strptime(date_bdd, '%Y-%m-%d')).days) <= 5:
+                if correspondent(dom_api, nom_dom_bdd) and correspondent(ext_api, nom_ext_bdd):
+                    id_match_bdd = m["id_match"]
+                    break
 
-                # Si le bookmaker n'est pas validé comme FR, on l'ignore
-                if not est_un_bookie_fr:
-                    continue
+        if not id_match_bdd:
+            continue
 
-                for market in bookie["markets"]:
-                    if market["key"] != "h2h":
-                        continue
+        # Extraction des meilleures cotes
+        best_1, bookie_1 = 0.0, ""
+        best_n, bookie_n = 0.0, ""
+        best_2, bookie_2 = 0.0, ""
 
-                    for outcome in market["outcomes"]:
-                        price = float(outcome["price"])
-                        name = outcome["name"]
+        for bookie in match_odd["bookmakers"]:
+            for market in bookie['markets']:
+                if market['key'] == "h2h":
+                    for outcome in market['outcomes']:
+                        price = float(outcome['price'])
+                        name = outcome['name']
 
-                        # Filtre comparatif : On garde uniquement la cote maximale
-                        if name == equipe_dom_api and price > best_1:
+                        if correspondent(name, dom_api) and price > best_1:
                             best_1 = price
-                            bookie_1 = bookie["title"]
+                            bookie_1 = bookie['title']
                         elif name == "Draw" and price > best_n:
                             best_n = price
-                            bookie_n = bookie["title"]
-                        elif name == equipe_ext_api and price > best_2:
+                            bookie_n = bookie['title']
+                        elif correspondent(name, ext_api) and price > best_2:
                             best_2 = price
-                            bookie_2 = bookie["title"]
+                            bookie_2 = bookie['title']
 
-            # Si le script a extrait des cotes valides
-            if best_1 > 0:
-                liste_cotes_finales.append({
-                    "id_match": id_match,
-                    "cote_1": best_1,
-                    "bookmaker_1": bookie_1,
-                    "cote_n": best_n,
-                    "bookmaker_n": bookie_n,
-                    "cote_2": best_2,
-                    "bookmaker_2": bookie_2
-                })
+        if best_1 > 0:
+            dictionnaire_cotes_uniques[id_match_bdd] = {
+                "id_match": id_match_bdd,
+                "cote_1": best_1,
+                "bookmaker_1": bookie_1,
+                "cote_n": best_n,
+                "bookmaker_n": bookie_n,
+                "cote_2": best_2,
+                "bookmaker_2": bookie_2
+            }
+            print(f"  MATCH ASSOCIÉ : {dom_api} vs {ext_api} -> ID BDD: {id_match_bdd}")
 
-                print(f"\n {equipe_dom_api} vs {equipe_ext_api} ({nom_champi})")
-                print(f"    Meilleur 1 : {best_1} chez {bookie_1}")
-                print(f"    Meilleur N : {best_n} chez {bookie_n}")
-                print(f"    Meilleur 2 : {best_2} chez {bookie_2}")
-
-    # --- ÉTAPE 3 : Insertion groupée dans Supabase ---
-    if liste_cotes_finales:
-        res = requests.post(
-            f"{SUPABASE_URL}/rest/v1/cote",
-            headers=HEADERS_SUPA,
-            json=liste_cotes_finales
-        )
-
-        if res.status_code in [200, 201, 204]:
-            print(f"\n[BDD]  Réussite ! {len(liste_cotes_finales)} lignes de cotes insérées ou mises à jour.")
-        else:
-            print(f"\n[BDD] Erreur lors de l'envoi : {res.text}")
-    else:
-        print("\n Aucune cote exploitable trouvée pour les critères français.")
-
-print("\n=== FIN DE LA SYNCHRONISATION ===")
+# 3. Envoi vers la table 'cote'
+liste_cotes_finales = list(dictionnaire_cotes_uniques.values())
+if liste_cotes_finales:
+    url_upsert = f"{SUPABASE_URL}/rest/v1/cote?on_conflict=id_match"
+    res = requests.post(url_upsert, headers=HEADERS_SUPA, json=liste_cotes_finales)
+    print(f"\n[SUPABASE] Statut : {res.status_code}. {len(liste_cotes_finales)} cotes synchronisées !")
+else:
+    print("\nAucune correspondance trouvée.")
