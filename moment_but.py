@@ -24,9 +24,8 @@ CHAMPIONNATS_SOFA = {
 }
  
 def creer_driver():
-    """Crée un navigateur Chrome qui ressemble à un humain"""
     options = Options()
-    options.add_argument("--headless")  # invisible à l'écran
+    options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
@@ -35,36 +34,55 @@ def creer_driver():
     options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
     options.add_argument("--lang=fr-FR")
     options.add_argument("--window-size=1920,1080")
- 
     driver = webdriver.Chrome(options=options)
-    # Masque le fait qu'on utilise Selenium
     driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     return driver
  
 def fetch_json(driver, url):
-    """Utilise Selenium pour récupérer du JSON depuis Sofascore"""
     driver.get(url)
-    time.sleep(random.uniform(2, 4))  # délai humain
+    time.sleep(random.uniform(2, 4))
     try:
         body = driver.find_element("tag name", "body").text
         return json.loads(body)
     except:
         return {}
  
-def get_matchs_termines(driver, tournament_id, season_id):
-    """Récupère les matchs terminés d'un championnat"""
-    url = f"https://api.sofascore.com/api/v1/unique-tournament/{tournament_id}/season/{season_id}/events/last/0"
-    data = fetch_json(driver, url)
-    return data.get("events", [])
+def get_tous_les_matchs(driver, tournament_id, season_id):
+    """
+    ✅ AMÉLIORATION : récupère TOUS les matchs de la saison
+    en bouclant sur toutes les pages (last/0, last/1, last/2...)
+    au lieu de seulement last/0
+    """
+    tous_les_matchs = []
+    page = 0
+ 
+    while True:
+        url = f"https://api.sofascore.com/api/v1/unique-tournament/{tournament_id}/season/{season_id}/events/last/{page}"
+        data = fetch_json(driver, url)
+        events = data.get("events", [])
+ 
+        if not events:
+            # Plus de matchs disponibles sur cette page → on arrête
+            print(f"      Page {page} vide — arrêt ({len(tous_les_matchs)} matchs au total)")
+            break
+ 
+        tous_les_matchs.extend(events)
+        print(f"      Page {page} → {len(events)} matchs récupérés (total: {len(tous_les_matchs)})")
+        page += 1
+ 
+        # Sécurité : max 20 pages pour éviter une boucle infinie
+        if page > 20:
+            print(f"      Limite de 20 pages atteinte")
+            break
+ 
+    return tous_les_matchs
  
 def get_incidents_match(driver, match_id):
-    """Récupère les buts d'un match"""
     url = f"https://api.sofascore.com/api/v1/event/{match_id}/incidents"
     data = fetch_json(driver, url)
     return data.get("incidents", [])
  
 def determiner_tranche(minute):
-    """Détermine la tranche de 15 minutes d'un but"""
     if minute is None:
         return None
     if 0 <= minute <= 15:
@@ -81,7 +99,6 @@ def determiner_tranche(minute):
         return "tranche_76_90"
  
 def upsert_moment_but(id_equipe, stats):
-    """Insère ou met à jour les stats dans Supabase"""
     res = requests.get(
         f"{SUPABASE_URL}/rest/v1/moment_but?id_equipe=eq.{id_equipe}",
         headers=HEADERS_SUPA
@@ -107,7 +124,6 @@ def upsert_moment_but(id_equipe, stats):
 # ============================================================
 print(f"=== SCRAPING MOMENTS DE BUTS ({datetime.now().strftime('%Y-%m-%d')}) ===\n")
  
-# Charger toutes les équipes de la BDD
 print("Chargement des équipes depuis Supabase...")
 equipes_bdd = {}
 for offset in [0, 1000]:
@@ -119,11 +135,8 @@ for offset in [0, 1000]:
         equipes_bdd[e["nom_equipe"]] = e["id_equipe"]
 print(f"{len(equipes_bdd)} équipes chargées\n")
  
-# Lancer le navigateur
 print("Lancement du navigateur Chrome...")
 driver = creer_driver()
- 
-# Visite Sofascore d'abord pour récupérer les cookies comme un humain
 driver.get("https://www.sofascore.com/fr/")
 time.sleep(random.uniform(3, 5))
 print("Cookies récupérés ✅\n")
@@ -132,10 +145,12 @@ stats_equipes = {}
  
 for nom_champi, infos in CHAMPIONNATS_SOFA.items():
     print(f"--- {nom_champi} ---")
-    matchs = get_matchs_termines(driver, infos["tournament_id"], infos["season_id"])
-    print(f"{len(matchs)} matchs récupérés")
  
-    for match in matchs:
+    # ✅ Récupère TOUS les matchs de la saison (toutes les pages)
+    matchs = get_tous_les_matchs(driver, infos["tournament_id"], infos["season_id"])
+    print(f"→ {len(matchs)} matchs au total pour {nom_champi}\n")
+ 
+    for i, match in enumerate(matchs):
         match_id = match.get("id")
         home = match.get("homeTeam", {}).get("name", "")
         away = match.get("awayTeam", {}).get("name", "")
@@ -167,12 +182,9 @@ for nom_champi, infos in CHAMPIONNATS_SOFA.items():
  
             if id_equipe not in stats_equipes:
                 stats_equipes[id_equipe] = {
-                    "tranche_0_15": 0,
-                    "tranche_16_30": 0,
-                    "tranche_31_45": 0,
-                    "tranche_46_60": 0,
-                    "tranche_61_75": 0,
-                    "tranche_76_90": 0,
+                    "tranche_0_15": 0, "tranche_16_30": 0,
+                    "tranche_31_45": 0, "tranche_46_60": 0,
+                    "tranche_61_75": 0, "tranche_76_90": 0,
                     "total_buts": 0
                 }
  
@@ -181,11 +193,9 @@ for nom_champi, infos in CHAMPIONNATS_SOFA.items():
  
     print(f"✅ {nom_champi} traité\n")
  
-# Fermer le navigateur
 driver.quit()
 print("Navigateur fermé ✅\n")
  
-# Enregistrement dans Supabase
 print("--- ENREGISTREMENT DANS SUPABASE ---")
 for id_equipe, stats in stats_equipes.items():
     upsert_moment_but(id_equipe, stats)
