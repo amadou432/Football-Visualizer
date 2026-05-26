@@ -143,7 +143,10 @@ print(f"--- Scraping absents du {date_du_jour} ---")
 # --- ÉTAPE 1 : Charger TOUTES les équipes de la BDD ---
 print("Chargement des équipes depuis Supabase...")
 equipes_bdd = {}
-for offset in [0, 1000]:
+for offset in [0, 1000]:# Supabase limite les réponses à 1000 lignes maximum par requête pour ne pas ramer.
+                             # On fait donc une boucle en deux voyages : 
+                              # - Tour 1 (offset 0) : on prend les 1000 premières équipes
+                               # - Tour 2 (offset 1000) : on saute les 1000 premières et on prend les suivantes (1001 à 2000)
     res = requests.get(
         f"{SUPABASE_URL}/rest/v1/equipe?select=id_equipe,nom_equipe&offset={offset}&limit=1000",
         headers=HEADERS_SUPA
@@ -246,13 +249,13 @@ for club, joueurs in absents_par_equipe.items():
         )
         if post_res.status_code == 201:
             total += 1
-            print(f"✅ {joueur['nom']} ({club})")
+            print(f" {joueur['nom']} ({club})")
         else:
-            print(f"❌ Erreur {joueur['nom']} : {post_res.status_code} — {post_res.text}")
+            print(f" Erreur {joueur['nom']} : {post_res.status_code} — {post_res.text}")
  
-print(f"\n✅ {total} absents (avec photos) enregistrés au total")
+print(f"\n {total} absents (avec photos) enregistrés au total")
  
 if non_trouves:
-    print(f"\n⚠️  Clubs TM non trouvés dans la BDD :")
+    print(f"\n Clubs TM non trouvés dans la BDD :")
     for c in sorted(non_trouves):
         print(f"   - '{c}'")
