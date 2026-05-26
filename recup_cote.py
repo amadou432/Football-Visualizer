@@ -32,14 +32,14 @@ DICTIONNAIRE_MAPPING = {
 }
 
 def nettoyer_nom(nom):
-    if not nom or not isinstance(nom, str):
+    if not nom or not isinstance(nom, str): #si la variable est vide ou none ou si elle n'est pas une chaine de caractere
         return ""
-    nom = nom.lower().strip()
+    nom = nom.lower().strip() #.lower() transforme en minuscule et .strip() supprime les espaces inutiles 
     parasites = [
         "fc", "cf", "afc", "rc", "as", "ssc", "ac", "us", "ud", "ca", "the", "club", 
         "stade", "olympique", "de", "di", "san", "saint", "fútbol", "futbol", "rcd"
     ]
-    mots = nom.replace("-", " ").split()
+    mots = nom.replace("-", " ").split() #.replace sert a remplacer un chaine de caractere par une autre et .split sert a transformer une chaine de caractere e liste
     mots_filtres = [m for m in mots if m not in parasites]
     return " ".join(mots_filtres).strip()
 
@@ -69,7 +69,7 @@ print(f"--- DÉBUT DE SYNCHRONISATION ({date_du_jour}) ---")
 
 # 1. JOINTURE DIRECTE : On demande à Supabase d'inclure les noms des équipes
 # ATTENTION : Si tes colonnes de liaison s'appellent id_equipe_dom et id_equipe_ext, Supabase fait la jointure tout seul avec la syntaxe ci-dessous
-url_jointure = f"{SUPABASE_URL}/rest/v1/match?select=id_match,date_match,id_equipe_dom(nom_equipe),id_equipe_ext(nom_equipe)&date_match=gte.{date_du_jour}"
+url_jointure = f"{SUPABASE_URL}/rest/v1/match?select=id_match,date_match,id_equipe_dom(nom_equipe),id_equipe_ext(nom_equipe)&date_match=gte.{date_du_jour}" #gte veut dire greater than qui signifie la date d'aujoud'hui et plus
 res_matchs = requests.get(url_jointure, headers=HEADERS_SUPA)
 matchs_bdd = res_matchs.json()
 
@@ -158,7 +158,7 @@ for sport_key, nom_champi in CHAMPIONNATS.items():
 # 3. Envoi vers la table 'cote'
 liste_cotes_finales = list(dictionnaire_cotes_uniques.values())
 if liste_cotes_finales:
-    url_upsert = f"{SUPABASE_URL}/rest/v1/cote?on_conflict=id_match"
+    url_upsert = f"{SUPABASE_URL}/rest/v1/cote?on_conflict=id_match" #le ? permet d'ajouter une consigne a suapabse,conflict permet de mettre a jour pour pas creer de doublons
     res = requests.post(url_upsert, headers=HEADERS_SUPA, json=liste_cotes_finales)
     print(f"\n[SUPABASE] Statut : {res.status_code}. {len(liste_cotes_finales)} cotes synchronisées !")
 else:
