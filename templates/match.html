@@ -25,7 +25,6 @@
         <!-- En-tête du match -->
         <section class="match-hero-card">
             <div class="league-tag">
-                <span class="date">{{ match.date_match if match.date_match else '--/--/----' }}</span>
             </div>
             <div class="hero-team">
                 <img src="{{ match.equipe_dom.logo_equipe }}" alt="{{ match.equipe_dom.nom_equipe }}">
@@ -36,6 +35,7 @@
                 <p class="league-detail">{{ match.nom_champi }}</p>
                 <div class="big-vs">VS</div>
                 <div class="match-date-time">{{ match.heure }}</div>
+                <span class="date">{{ match.date_match if match.date_match else '--/--/----' }}</span>
             </div>
 
             <div class="hero-team">
@@ -102,30 +102,19 @@
                         {% endfor %}
                     </div>
 
-                    <div class="info-card">
-    <h3>📊 Formes des Equipes</h3>
-    
-    <p class="form-equipe-label">{{ match.equipe_dom.nom_equipe }}</p>
-    <div class="form-row">
-        {% for f in match.forme_dom %}
-            <div class="form-item">
-                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
-                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
-            </div>
-        {% endfor %}
-    </div>
+                    <div class="divider"></div>
 
-    <p class="form-equipe-label">{{ match.equipe_ext.nom_equipe }}</p>
-    <div class="form-row">
-        {% for f in match.forme_ext %}
-            <div class="form-item">
-                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
-                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
-            </div>
-        {% endfor %}
-    </div>
-
-</div>
+                    <h3 class="section-title">📊 Forme Récente</h3>
+                    <div class="form-container">
+                        <div class="form-row">
+                            <span class="form-equipe-label">Dom.</span>
+                            {% for f in forme_dom %}<span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>{% endfor %}
+                        </div>
+                        <div class="form-row">
+                            <span class="form-equipe-label">Ext.</span>
+                            {% for f in forme_ext %}<span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>{% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -148,7 +137,10 @@
                     </div>
                 </div>
 
-                
+                <div class="info-card">
+                    <h3>📈 Radar de Performance</h3>
+                    <canvas id="radarChart"></canvas>
+                </div>
             </div>
 
         </div>

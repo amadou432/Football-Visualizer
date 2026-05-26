@@ -38,7 +38,7 @@ def recup_cote():
  
 def recup_forme_equipe():
     forme = supabase.table("forme_equipes").select(
-        "id_equipe, id_match, date, buts_marques, buts_encaisses, resultat, domicile, adversaire"
+        "id_equipe, date, buts_marques, buts_encaisses, resultat, domicile, adversaire, nom_equipe, id_match"
     ).execute()
     return forme.data
  
@@ -110,7 +110,7 @@ def afficher_match(id):
         match = None
  
     if match is None:
-        return render_template("match.html", match=None), 404
+        return render_template("erreur.html", message=f"Match {id} introuvable."), 404
  
     return render_template("match.html",
                            match=match,

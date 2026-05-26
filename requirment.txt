@@ -16,3 +16,4 @@ requests==2.32.3
 
 # Analyse HTML - Web scrapping
 beautifulsoup4==4.12.3
+cloudscraper
