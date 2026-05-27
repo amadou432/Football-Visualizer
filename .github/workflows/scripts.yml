@@ -1,22 +1,43 @@
 name: Scripts automatiques
+ 
 on:
   schedule:
-    - cron: '0 0 * * *'    # 2h heure française
-    - cron: '0 12 * * *'   # 14h heure française
-    - cron: '0 18 * * *'   # 20h heure française
-
+    - cron: '0 0 * * *'    # 2h heure française — Cotes
+    - cron: '0 12 * * *'   # 14h heure française — Cotes
+    - cron: '0 18 * * *'   # 20h heure française — Absents
+    - cron: '0 3 * * *'    # 5h heure française — Moments des buts (tous les jours)
+ 
 jobs:
   run:
     runs-on: ubuntu-latest
+ 
     steps:
       - uses: actions/checkout@v3
+ 
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - run: pip install requests beautifulsoup4 supabase python-dotenv
+ 
+      - name: Installer dépendances
+        run: pip install requests beautifulsoup4 supabase python-dotenv selenium
+ 
+      - name: Installer Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
+ 
+      - name: Installer Chromedriver
+        uses: nanasess/setup-chromedriver@v2
+ 
       - name: Cotes
         if: github.event.schedule == '0 0 * * *' || github.event.schedule == '0 12 * * *'
         run: python recup_cote.py
+ 
       - name: Absents
         if: github.event.schedule == '0 18 * * *'
         run: python absencescraping.py
+ 
+      - name: Moments des buts
+        if: github.event.schedule == '0 3 * * *'
+        run: python moment_but.py
