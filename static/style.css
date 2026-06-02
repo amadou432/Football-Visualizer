@@ -462,3 +462,43 @@ h1 {
     font-style: italic;
     padding-left: 10px;
 }
+
+/* Compo probable */
+.compo-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid #334155;
+    font-size: 0.85rem;
+}
+
+.compo-poste {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    width: 80px;
+    text-transform: uppercase;
+}
+
+.compo-nom {
+    flex: 1;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.compo-titulaire {
+    font-size: 0.65rem;
+    background: var(--accent);
+    color: var(--bg-dark);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.compo-remplacant {
+    font-size: 0.65rem;
+    background: #334155;
+    color: var(--text-dim);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
