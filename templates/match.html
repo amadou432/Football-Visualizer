@@ -101,7 +101,33 @@
                         <p class="no-absent">Aucun absent</p>
                         {% endfor %}
                     </div>
+                </div>
 
+<<<<<<< HEAD
+                <div class="info-card">
+                    <h3>📊 Formes des Equipes</h3>
+                    
+                    <p class="form-equipe-label">{{ match.equipe_dom.nom_equipe }}</p>
+                    <div class="form-row">
+                        {% for f in match.forme_dom %}
+                            <div class="form-item">
+                                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
+                                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <p class="form-equipe-label">{{ match.equipe_ext.nom_equipe }}</p>
+                    <div class="form-row">
+                        {% for f in match.forme_ext %}
+                            <div class="form-item">
+                                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
+                                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+=======
                     <div class="divider"></div>
 
                     <h3 class="section-title">📊 Forme Récente</h3>
@@ -115,12 +141,48 @@
                             {% for f in forme_ext %}<span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>{% endfor %}
                         </div>
                     </div>
+>>>>>>> main
                 </div>
             </div>
 
             <div class="details-column">
                 <div class="info-card">
-                    <h3>🎯 Indice de Confiance</h3>
+                    <h3>📋 Compo probable</h3>
+    
+                    <p class="form-equipe-label">{{ match.equipe_dom.nom_equipe }}</p>
+                    {% for j in compo_dom %}
+                        <div class="compo-player">
+                            <span class="compo-poste">{{ j.poste }}</span>
+                            <span class="compo-nom">{{ j.nom_joueur }}</span>
+                            {% if j.titulaire %}
+                                <span class="compo-titulaire">Titulaire</span>
+                            {% else %}
+                                <span class="compo-remplacant">Remplaçant</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="no-absent">Composition non disponible</p>
+                    {% endfor %}
+
+                    <p class="form-equipe-label">{{ match.equipe_ext.nom_equipe }}</p>
+                    {% for j in compo_ext %}
+                        <div class="compo-player">
+                            <span class="compo-poste">{{ j.poste }}</span>
+                            <span class="compo-nom">{{ j.nom_joueur }}</span>
+                            {% if j.titulaire %}
+                                <span class="compo-titulaire">Titulaire</span>
+                            {% else %}
+                                <span class="compo-remplacant">Remplaçant</span>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="no-absent">Composition non disponible</p>
+                    {% endfor %}
+                </div>
+
+                 <div class="details-column"><!--  compo probable -->
+                <div class="info-card">
+                    <h3> 🎯 Indice de confiance</h3>
                     <div class="trust-row">
                         <span class="team-name">{{ match.equipe_dom.nom_equipe }}</span>
                         <div class="bar-container">

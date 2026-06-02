@@ -43,6 +43,12 @@ def recup_forme_equipe():
     return forme.data
  
  
+def recup_compo():
+    compo = supabase.table("composition").select(
+        "id_compo, id_match, nom_joueur, nom_equipe, poste, titulaire"
+        ).execute()
+    return compo.data
+
 @app.route('/')
 def afficher_matchs_bdd():
     match_bdd = []
@@ -52,7 +58,7 @@ def afficher_matchs_bdd():
     try:
         response = supabase.table("match").select(
             "id_match, date_match, heure, nom_champi, id_equipe_dom, id_equipe_ext"
-        ).gte("date_match", str(date.today())).execute()
+        ).execute()
  
         match_bdd = response.data
         equipes = recup_toutes_equipes()
@@ -76,6 +82,7 @@ def afficher_match(id):
     forme = []
     absents_dom = []
     absents_ext = []
+    compo = []
  
     try:
         response = supabase.table("match").select(
@@ -93,6 +100,7 @@ def afficher_match(id):
  
             forme = recup_forme_equipe()
             absent = recup_absent()
+            compo = recup_compo()
  
             match['equipe_dom'] = equipes.get(match['id_equipe_dom'], {})
             match['equipe_ext'] = equipes.get(match['id_equipe_ext'], {})
@@ -100,10 +108,16 @@ def afficher_match(id):
  
             match['forme_dom'] = [f for f in forme if f['id_equipe'] == match['id_equipe_dom']][-5:]
             match['forme_ext'] = [f for f in forme if f['id_equipe'] == match['id_equipe_ext']][-5:]
+
  
-            # FIX : variables séparées pour le template
             absents_dom = [a for a in absent if a['id_equipe'] == match['id_equipe_dom']]
             absents_ext = [a for a in absent if a['id_equipe'] == match['id_equipe_ext']]
+
+            match["date_match"] = date_fr(match["date_match"])
+
+            compo_dom = [c for c in compo if c['id_match'] == match['id_match'] and c['nom_equipe'] == match['equipe_dom'].get('nom_equipe')]
+            compo_ext = [c for c in compo if c['id_match'] == match['id_match'] and c['nom_equipe'] == match['equipe_ext'].get('nom_equipe')]
+            
  
     except Exception as e:
         print(f"Erreur : {e}")
@@ -116,7 +130,9 @@ def afficher_match(id):
                            match=match,
                            forme=forme,
                            absents_dom=absents_dom,
-                           absents_ext=absents_ext)
+                           absents_ext=absents_ext,
+                           compo_dom = compo_dom,
+                           compo_ext = compo_ext)
  
  
 if __name__ == '__main__':
