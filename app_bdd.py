@@ -1,7 +1,7 @@
 from flask import Flask, render_template
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from datetime import date, datetime
+from datetime import date
  
 load_dotenv()
  
@@ -38,16 +38,10 @@ def recup_cote():
  
 def recup_forme_equipe():
     forme = supabase.table("forme_equipes").select(
-        "id_equipe, id_match, date, buts_marques, buts_encaisses, resultat, domicile, adversaire"
+        "id_equipe, date, buts_marques, buts_encaisses, resultat, domicile, adversaire, nom_equipe, id_match"
     ).execute()
     return forme.data
  
-def date_fr(date_str):
-    if not date_str:
-        return '--/--/----'
-    
-    date = datetime.strptime(date_str, "%Y-%m-%d")
-    return date.strftime("%d-%m-%Y")
  
 def recup_compo():
     compo = supabase.table("composition").select(
@@ -75,7 +69,6 @@ def afficher_matchs_bdd():
         cotes_par_match = {c["id_match"]: c for c in cote}
         for m in match_bdd:
             m["cote"] = cotes_par_match.get(m["id_match"], {})
-            m["date_match"] = date_fr(m["date_match"])
  
     except Exception as e:
         print(f"Erreur : {e}")
@@ -131,7 +124,7 @@ def afficher_match(id):
         match = None
  
     if match is None:
-        return render_template("match.html", match=None), 404
+        return render_template("erreur.html", message=f"Match {id} introuvable."), 404
  
     return render_template("match.html",
                            match=match,

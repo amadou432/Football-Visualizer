@@ -157,8 +157,8 @@ for code, league_name in CHAMPIONNATS.items():
 
             forme_data.append({
                 "id_equipe": team_id,
-                "team_name": team_name,
-                "match_id": m["id"],
+                "nom_equipe": team_name,
+                "id_match": m["id"],
                 "date": m["utcDate"][:10],
                 "buts_marques": buts_m,
                 "buts_encaisses": buts_e,
