@@ -463,73 +463,42 @@ h1 {
     padding-left: 10px;
 }
 
-/* ==========================================
-   TABLEAU DES TRANCHES DE BUTS (DONNÉES COMPLEXES)
-   ========================================== */
-
-/* Style général du tableau */
-.info-card table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-/* En-têtes du tableau */
-.info-card th {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #334155;
-    font-weight: 600;
-}
-
-/* Lignes du tableau */
-.info-card tbody tr {
+/* Compo probable */
+.compo-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
     border-bottom: 1px solid #334155;
-    transition: background-color 0.2s ease;
+    font-size: 0.85rem;
 }
 
-.info-card tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+.compo-poste {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    width: 80px;
+    text-transform: uppercase;
 }
 
-/* Cellules de données */
-.info-card td {
-    padding: 12px 0;
-    font-size: 0.9rem;
-    vertical-align: middle;
-}
-
-/* Libellé des tranches (ex: 0' - 15') */
-.info-card td strong {
+.compo-nom {
+    flex: 1;
     color: var(--text-main);
-    font-weight: 600;
-}
-
-/* Petits badges de pourcentages */
-.info-card td span {
     font-weight: 500;
-    margin-left: 4px;
 }
 
-/* Bouton de pari personnalisé */
-.info-card .btn-parier-tranche {
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.8rem;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.3s ease;
-}
-
-.info-card .btn-parier-tranche:hover {
+.compo-titulaire {
+    font-size: 0.65rem;
     background: var(--accent);
     color: var(--bg-dark);
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.compo-remplacant {
+    font-size: 0.65rem;
+    background: #334155;
+    color: var(--text-dim);
+    padding: 2px 8px;
+    border-radius: 10px;
 }
