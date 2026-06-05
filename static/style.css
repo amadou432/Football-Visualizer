@@ -502,3 +502,47 @@ h1 {
     padding: 2px 8px;
     border-radius: 10px;
 }
+
+/* Ratio but par minutes */
+.top3-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.top3-joueur {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    gap: 6px;
+    background: var(--bg-dark);
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #334155;
+}
+
+.top3-rang {
+    font-size: 1.2rem;
+}
+
+.top3-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+}
+
+.top3-nom {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text-main);
+}
+
+.top3-ratio {
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-weight: 700;
+}
