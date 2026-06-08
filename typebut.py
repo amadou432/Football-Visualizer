@@ -4,6 +4,8 @@ import random
 from collections import defaultdict
 from datetime import datetime, timezone
 
+from base import creer_driver, get_tous_les_matchs
+
 # ============================================================
 # CONFIG
 # ============================================================
@@ -96,46 +98,6 @@ def safe_get(url, retries=4):
     return None
 
 # ============================================================
-# MATCHS PAGINÉS
-# ============================================================
-
-def get_all_matches(tournament_id, season_id):
-    page = 1
-    all_matches = []
-
-    while True:
-        url = f"https://api.sofascore.com/api/v1/unique-tournament/{tournament_id}/season/{season_id}/events/last/{page}"
-
-        r = safe_get(url)
-
-        if not r:
-            break
-
-        try:
-            data = r.json()
-        except Exception as e:
-            print(f"Erreur JSON page {page} : {e}")
-            break
-
-        events = data.get("events", [])
-
-        if not events:
-            break
-
-        all_matches.extend(events)
-        print(f"Page {page} OK → {len(events)} matchs (total : {len(all_matches)})")
-
-        page += 1
-
-        # Délai anti-bot aléatoire entre les pages
-        time.sleep(random.uniform(0.8, 1.5))
-
-        if page > 15:
-            break
-
-    return all_matches
-
-# ============================================================
 # INCIDENTS
 # ============================================================
 
@@ -159,7 +121,7 @@ def get_incidents(event_id):
 
 def send_supabase(data):
     r = requests.post(
-        f"{SUPABASE_URL}/rest/v1/type_but_equipes",
+        f"{SUPABASE_URL}/rest/v1/types_buts_equipes",
         headers=SUPA_HEADERS,
         json=data,
         timeout=30
@@ -196,7 +158,11 @@ for key, league in CHAMPIONNATS.items():
     print(f"Ligue : {league['name']}")
     print("==============================")
 
-    matchs = get_all_matches(league["id"], league["season"])
+    
+    driver = creer_driver()
+    driver.get("https://www.sofascore.com/fr/")
+    print(driver, league["id"], league["season"])
+    matchs = get_tous_les_matchs(driver, league["id"], league["season"])
     print(f"Matchs récupérés : {len(matchs)}")
 
     stats = defaultdict(lambda: {
