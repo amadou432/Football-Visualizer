@@ -1,88 +1,15 @@
-import requests
+
+from datetime import datetime
+from base import (
+    CHAMPIONNATS_SOFA,
+    creer_driver, get_tous_les_matchs, get_incidents_match,
+    charger_equipes, resoudre_equipe, upsert_supabase
+)
 import time
 import random
-import json
-from datetime import datetime
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
- 
-SUPABASE_URL = "https://deqthaukwlduxbsbmqgz.supabase.co"
-SUPABASE_KEY = "sb_secret_xv1e1Yjbv5eJ6rVcWQPbUQ_IQQpN8r2"
- 
-HEADERS_SUPA = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json"
-}
- 
-CHAMPIONNATS_SOFA = {
-    "Premier League": {"tournament_id": 17,  "season_id": 76986},
-    "Ligue 1":        {"tournament_id": 34,  "season_id": 77356},
-    "La Liga":        {"tournament_id": 8,   "season_id": 77559},
-    "Serie A":        {"tournament_id": 23,  "season_id": 76457},
-    "Bundesliga":     {"tournament_id": 35,  "season_id": 77333},
-}
- 
-def creer_driver():
-    options = Options()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
-    options.add_argument("user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-    options.add_argument("--lang=fr-FR")
-    options.add_argument("--window-size=1920,1080")
-    driver = webdriver.Chrome(options=options)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-    return driver
- 
-def fetch_json(driver, url):
-    driver.get(url)
-    time.sleep(random.uniform(2, 4))
-    try:
-        body = driver.find_element("tag name", "body").text
-        return json.loads(body)
-    except:
-        return {}
- 
-def get_tous_les_matchs(driver, tournament_id, season_id):
-    """
-    ✅ AMÉLIORATION : récupère TOUS les matchs de la saison
-    en bouclant sur toutes les pages (last/0, last/1, last/2...)
-    au lieu de seulement last/0
-    """
-    tous_les_matchs = []
-    page = 0
- 
-    while True:
-        url = f"https://api.sofascore.com/api/v1/unique-tournament/{tournament_id}/season/{season_id}/events/last/{page}"
-        data = fetch_json(driver, url)
-        events = data.get("events", [])
- 
-        if not events:
-            # Plus de matchs disponibles sur cette page → on arrête
-            print(f"      Page {page} vide — arrêt ({len(tous_les_matchs)} matchs au total)")
-            break
- 
-        tous_les_matchs.extend(events)
-        print(f"      Page {page} → {len(events)} matchs récupérés (total: {len(tous_les_matchs)})")
-        page += 1
- 
-        # Sécurité : max 20 pages pour éviter une boucle infinie
-        if page > 20:
-            print(f"      Limite de 20 pages atteinte")
-            break
- 
-    return tous_les_matchs
- 
-def get_incidents_match(driver, match_id):
-    url = f"https://api.sofascore.com/api/v1/event/{match_id}/incidents"
-    data = fetch_json(driver, url)
-    return data.get("incidents", [])
- 
+
 def determiner_tranche(minute):
+    """Détermine la tranche horaire correspondante à la minute du but."""
     if minute is None:
         return None
     if 0 <= minute <= 15:
@@ -97,89 +24,68 @@ def determiner_tranche(minute):
         return "tranche_61_75"
     else:
         return "tranche_76_90"
- 
-def upsert_moment_but(id_equipe, stats):
-    res = requests.get(
-        f"{SUPABASE_URL}/rest/v1/moment_but?id_equipe=eq.{id_equipe}",
-        headers=HEADERS_SUPA
-    ).json()
- 
-    if res:
-        headers_update = {**HEADERS_SUPA, "Prefer": "return=minimal"}
-        requests.patch(
-            f"{SUPABASE_URL}/rest/v1/moment_but?id_equipe=eq.{id_equipe}",
-            headers=headers_update,
-            json=stats
-        )
-    else:
-        payload = {"id_equipe": id_equipe, **stats}
-        requests.post(
-            f"{SUPABASE_URL}/rest/v1/moment_but",
-            headers=HEADERS_SUPA,
-            json=payload
-        )
- 
+
 # ============================================================
 # PROGRAMME PRINCIPAL
 # ============================================================
 print(f"=== SCRAPING MOMENTS DE BUTS ({datetime.now().strftime('%Y-%m-%d')}) ===\n")
- 
+
 print("Chargement des équipes depuis Supabase...")
-equipes_bdd = {}
-for offset in [0, 1000]:
-    res = requests.get(
-        f"{SUPABASE_URL}/rest/v1/equipe?select=id_equipe,nom_equipe&offset={offset}&limit=1000",
-        headers=HEADERS_SUPA
-    ).json()
-    for e in res:
-        equipes_bdd[e["nom_equipe"]] = e["id_equipe"]
+equipes_bdd = charger_equipes()
 print(f"{len(equipes_bdd)} équipes chargées\n")
- 
+
 print("Lancement du navigateur Chrome...")
 driver = creer_driver()
 driver.get("https://www.sofascore.com/fr/")
 time.sleep(random.uniform(3, 5))
 print("Cookies récupérés ✅\n")
- 
+
 stats_equipes = {}
- 
+equipes_non_trouvees = set()
+
 for nom_champi, infos in CHAMPIONNATS_SOFA.items():
     print(f"--- {nom_champi} ---")
- 
-    # ✅ Récupère TOUS les matchs de la saison (toutes les pages)
+
+    # Récupère TOUS les matchs de la saison via la fonction globale de base.py
     matchs = get_tous_les_matchs(driver, infos["tournament_id"], infos["season_id"])
     print(f"→ {len(matchs)} matchs au total pour {nom_champi}\n")
- 
-    for i, match in enumerate(matchs):
+
+    buts_championnats = 0
+
+    for match in matchs:
         match_id = match.get("id")
         home = match.get("homeTeam", {}).get("name", "")
         away = match.get("awayTeam", {}).get("name", "")
- 
+
+        
         incidents = get_incidents_match(driver, match_id)
- 
+
         for incident in incidents:
             if incident.get("incidentType") != "goal":
                 continue
-            if incident.get("incidentClass") == "ownGoal":
-                continue
- 
+
             minute = incident.get("time")
-            equipe_qui_marque = incident.get("isHome")
+
+            # GESTION OWN GOAL :
+            # Si c'est un but contre son camp, on l'attribue à l'équipe ADVERSE
+            if incident.get("incidentClass") == "ownGoal":
+                equipe_qui_marque = not incident.get("isHome")  # Inverser !
+            else:
+                equipe_qui_marque = incident.get("isHome")
+
             nom_equipe = home if equipe_qui_marque else away
- 
-            id_equipe = None
-            for nom_bdd, id_bdd in equipes_bdd.items():
-                if nom_equipe.lower() in nom_bdd.lower() or nom_bdd.lower() in nom_equipe.lower():
-                    id_equipe = id_bdd
-                    break
- 
+            
+            # Utilisation du mapping ultra-sécurisé de base.py
+            id_equipe = resoudre_equipe(nom_equipe, equipes_bdd)
+
             if not id_equipe:
+                equipes_non_trouvees.add(nom_equipe)
                 continue
- 
+
             tranche = determiner_tranche(minute)
             if not tranche:
                 continue
- 
+
             if id_equipe not in stats_equipes:
                 stats_equipes[id_equipe] = {
                     "tranche_0_15": 0, "tranche_16_30": 0,
@@ -187,19 +93,32 @@ for nom_champi, infos in CHAMPIONNATS_SOFA.items():
                     "tranche_61_75": 0, "tranche_76_90": 0,
                     "total_buts": 0
                 }
- 
+
             stats_equipes[id_equipe][tranche] += 1
             stats_equipes[id_equipe]["total_buts"] += 1
- 
-    print(f"✅ {nom_champi} traité\n")
- 
+            buts_championnats += 1
+
+    print(f"✅ {nom_champi} traité")
+    print(f"   📊 {len(matchs)} matchs analysés — saison_id: {infos['season_id']}")
+    print(f"   ⚽ {buts_championnats} buts trouvés sur ce championnat\n")
+
 driver.quit()
 print("Navigateur fermé ✅\n")
- 
+
+if equipes_non_trouvees:
+    print(f"⚠️  Équipes non mappées ({len(equipes_non_trouvees)}) — à vérifier dans base.py :")
+    for nom in sorted(equipes_non_trouvees):
+        print(f"   - {nom}")
+    print()
+
+# ============================================================
+# ENREGISTREMENT DANS SUPABASE
+# ============================================================
 print("--- ENREGISTREMENT DANS SUPABASE ---")
 for id_equipe, stats in stats_equipes.items():
-    upsert_moment_but(id_equipe, stats)
+    # Utilisation de la fonction upsert générique avec retry automatique
+    upsert_supabase("moment_but", "id_equipe", id_equipe, stats)
     print(f"✅ Équipe {id_equipe} — {stats['total_buts']} buts enregistrés")
- 
+
 print(f"\n✅ {len(stats_equipes)} équipes enregistrées dans moment_but")
 print("=== FIN ===")
