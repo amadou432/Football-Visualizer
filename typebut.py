@@ -29,30 +29,6 @@ SUPA_HEADERS = {
 }
 
 # ============================================================
-# CRÉER UN DRIVER AVEC ATTENTE (internet coupé / rate limit)
-# ============================================================
-
-def creer_driver_avec_attente():
-    """Crée un driver et attend que SofaScore/Internet soit dispo."""
-    for tentative in range(20):
-        new_driver = None
-        try:
-            new_driver = creer_driver()
-            new_driver.get("https://www.sofascore.com/fr/")
-            time.sleep(random.uniform(2, 4))
-            print("✅ Driver prêt")
-            return new_driver
-        except Exception as e:
-            print(f"⏳ Problème ({e.__class__.__name__}), attente 30s... ({tentative + 1}/20)")
-            if new_driver:
-                try:
-                    new_driver.quit()
-                except:
-                    pass
-            time.sleep(30)
-    raise Exception("❌ Impossible de créer un driver après 10 minutes, abandon.")
-
-# ============================================================
 # INCIDENTS AVEC RÉCUPÉRATION AUTO DU DRIVER
 # ============================================================
 
@@ -61,18 +37,23 @@ def get_incidents_safe(driver, event_id):
     try:
         url = f"https://api.sofascore.com/api/v1/event/{event_id}/incidents"
         data = fetch_json(driver, url)
-        print(data)
         return data.get("incidents", []), driver
 
     except Exception as e:
         print(f"⚠️ Driver mort ({e.__class__.__name__}), relance...")
+
+        # Ferme l'ancien driver proprement
         try:
             driver.quit()
         except:
             pass
 
-        new_driver = creer_driver_avec_attente()
+        # Recrée un nouveau driver et revisite la home
+        new_driver = creer_driver()
+        new_driver.get("https://www.sofascore.com/fr/")
+        time.sleep(random.uniform(2, 4))
 
+        # Réessaie avec le nouveau driver
         try:
             url = f"https://api.sofascore.com/api/v1/event/{event_id}/incidents"
             data = fetch_json(new_driver, url)
@@ -93,10 +74,12 @@ def send_supabase(data):
         json=data,
         timeout=30
     )
+
     if r.status_code not in (200, 201):
-        print(f"   ❌ SUPABASE ERROR : {r.status_code}")
-        print(f"   {r.text[:300]}")
+        print(f"SUPABASE ERROR : {r.status_code}")
+        print(r.text[:300])
         return False
+
     return True
 
 # ============================================================
@@ -120,7 +103,10 @@ for key, league in CHAMPIONNATS.items():
     print(f"Ligue : {league['name']}")
     print("==============================")
 
-    driver = creer_driver_avec_attente()
+    # Crée le driver et visite la home pour initialiser les cookies
+    driver = creer_driver()
+    driver.get("https://www.sofascore.com/fr/")
+    time.sleep(random.uniform(2, 4))
 
     matchs = get_tous_les_matchs(driver, league["id"], league["season"])
     print(f"Matchs récupérés : {len(matchs)}")
@@ -138,50 +124,7 @@ for key, league in CHAMPIONNATS.items():
     })
 
     # ========================================================
-    # ENVOI DES STATS ACTUELLES EN BDD
-    # ========================================================
-
-    def envoyer_stats():
-        batch = []
-        now = datetime.now(timezone.utc).isoformat()
-        for team_id, s in stats.items():
-            if s["total"] == 0:
-                continue
-            t = s["total"]
-            batch.append({
-                "id_equipe": team_id,
-                "nom_equipe": s["nom"],
-                "id_saison": league["season"],
-                "id_tournoi": league["id"],
-                "total_buts": t,
-                "buts_penalty": s["penalty"],
-                "buts_coup_franc": s["coup_franc"],
-                "buts_contre_son_camp": s["csc"],
-                "buts_autres": s["autres"],
-                "buts_tete": s["tete"],
-                "buts_pied_gauche": s["gauche"],
-                "buts_pied_droit": s["droite"],
-                "pourcentage_buts_penalty": pct(s["penalty"], t),
-                "pourcentage_buts_coup_franc": pct(s["coup_franc"], t),
-                "pourcentage_buts_csc": pct(s["csc"], t),
-                "pourcentage_buts_autres": pct(s["autres"], t),
-                "pourcentage_buts_tete": pct(s["tete"], t),
-                "pourcentage_buts_pied_gauche": pct(s["gauche"], t),
-                "pourcentage_buts_pied_droit": pct(s["droite"], t),
-                "date_mise_a_jour": now,
-            })
-
-        if not batch:
-            return 0
-
-        ok = send_supabase(batch)
-        if ok:
-            print(f"   💾 Sauvegarde : {len(batch)} équipes envoyées en BDD")
-            return len(batch)
-        return 0
-
-    # ========================================================
-    # BOUCLE SUR LES MATCHS
+    # MATCH LOOP
     # ========================================================
 
     for idx, m in enumerate(matchs):
@@ -190,6 +133,7 @@ for key, league in CHAMPIONNATS.items():
         if not event_id:
             continue
 
+        # ✅ get_incidents_safe retourne aussi le driver (potentiellement recréé)
         incidents, driver = get_incidents_safe(driver, event_id)
 
         for inc in incidents:
@@ -209,6 +153,7 @@ for key, league in CHAMPIONNATS.items():
             s["total"] += 1
 
             goal_type = (inc.get("goalType") or "").lower()
+
             if goal_type == "penalty":
                 s["penalty"] += 1
             elif goal_type == "own":
@@ -219,6 +164,7 @@ for key, league in CHAMPIONNATS.items():
                 s["autres"] += 1
 
             shot_type = (inc.get("shotType") or "").lower()
+
             if shot_type == "header":
                 s["tete"] += 1
             elif shot_type == "left-foot":
@@ -226,30 +172,74 @@ for key, league in CHAMPIONNATS.items():
             elif shot_type == "right-foot":
                 s["droite"] += 1
 
-        # Délai entre chaque match (anti rate-limit)
+        # Délai aléatoire entre chaque match
         time.sleep(random.uniform(2.0, 5.0))
 
-        # Log de progression
+        # Log de progression toutes les 20 requêtes
         if (idx + 1) % 20 == 0:
-            print(f"   → {idx + 1}/{len(matchs)} matchs traités")
+            print(f"  → {idx + 1}/{len(matchs)} matchs traités")
 
-        # Sauvegarde intermédiaire toutes les 50 matchs
-        if (idx + 1) % 50 == 0:
-            envoyer_stats()
-
-    # Ferme le driver à la fin de la ligue
+    # Ferme le driver proprement après chaque ligue
     try:
         driver.quit()
     except:
         pass
 
-    # Sauvegarde finale (pour les derniers matchs)
-    nb = envoyer_stats()
-    total_lignes += nb
-    print(f"✅ {league['name']} terminée — {nb} équipes en BDD")
+    # ========================================================
+    # SUPABASE
+    # ========================================================
 
-    print("\nPause avant la prochaine ligue...")
-    time.sleep(random.uniform(5, 10))
+    batch = []
+    now = datetime.now(timezone.utc).isoformat()
+
+    for team_id, s in stats.items():
+
+        if s["total"] == 0:
+            continue
+
+        t = s["total"]
+
+        batch.append({
+            "id_equipe": team_id,
+            "nom_equipe": s["nom"],
+            "id_saison": league["season"],
+            "id_tournoi": league["id"],
+
+            "total_buts": t,
+
+            "buts_penalty": s["penalty"],
+            "buts_coup_franc": s["coup_franc"],
+            "buts_contre_son_camp": s["csc"],
+            "buts_autres": s["autres"],
+
+            "buts_tete": s["tete"],
+            "buts_pied_gauche": s["gauche"],
+            "buts_pied_droit": s["droite"],
+
+            "pourcentage_buts_penalty": pct(s["penalty"], t),
+            "pourcentage_buts_coup_franc": pct(s["coup_franc"], t),
+            "pourcentage_buts_csc": pct(s["csc"], t),
+            "pourcentage_buts_autres": pct(s["autres"], t),
+
+            "pourcentage_buts_tete": pct(s["tete"], t),
+            "pourcentage_buts_pied_gauche": pct(s["gauche"], t),
+            "pourcentage_buts_pied_droit": pct(s["droite"], t),
+
+            "date_mise_a_jour": now,
+        })
+
+    if batch:
+        ok = send_supabase(batch)
+
+        if ok:
+            total_lignes += len(batch)
+            for r in batch:
+                print(f"OK : {r['nom_equipe']}")
+        else:
+            print(f"Erreur Supabase pour {league['name']}")
+
+    print(f"\nPause avant la prochaine ligue...")
+    time.sleep(random.uniform(3, 6))
 
 print("\n✅ FIN")
-print(f"Total équipes envoyées : {total_lignes}")
+print(f"Total lignes envoyées : {total_lignes}")
