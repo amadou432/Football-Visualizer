@@ -88,9 +88,7 @@ def afficher_match(id):
     absents_ext = []
     ratio_dom = None
     ratio_ext = None
-    compo = []
-    compo_dom = []
-    compo_ext = []
+   
  
     try:
         response = supabase.table("match").select(
