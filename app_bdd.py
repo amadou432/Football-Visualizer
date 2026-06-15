@@ -43,13 +43,15 @@ def recup_forme_equipe():
     return forme.data
  
  
-
-
 def recup_ratio_but_min():
     ratio = supabase.table("ratio_but_min").select(
         "id, id_equipe, joueur_1_nom, joueur_1_ratio, joueur_2_nom, joueur_2_buts, joueur_2_minutes, joueur_2_ratio, joueur_3_nom, joueur_3_buts, joueur_3_minutes, joueur_3_ratio, joueur_1_photo, joueur_2_photo, joueur_3_photo "
     ).execute()
     return ratio.data
+
+def recup_compo():
+    compo = supabase.table("composition").select("id_compo, id_match, nom_joueur, nom_equipe, poste").execute()
+    return compo.data
 
 @app.route('/')
 def afficher_matchs_bdd():
@@ -86,6 +88,9 @@ def afficher_match(id):
     absents_ext = []
     ratio_dom = None
     ratio_ext = None
+    compo = []
+    compo_dom = []
+    compo_ext = []
  
     try:
         response = supabase.table("match").select(
@@ -119,10 +124,11 @@ def afficher_match(id):
             match["date_match"] = match["date_match"]
 
             
-        ratio_but_min = recup_ratio_but_min()
-        ratio_dom = next((r for r in ratio_but_min if r['id_equipe'] == match['id_equipe_dom']), None)
-        ratio_ext = next((r for r in ratio_but_min if r['id_equipe'] == match['id_equipe_ext']), None)
-    
+            ratio_but_min = recup_ratio_but_min()
+            ratio_dom = next((r for r in ratio_but_min if r['id_equipe'] == match['id_equipe_dom']), None)
+            ratio_ext = next((r for r in ratio_but_min if r['id_equipe'] == match['id_equipe_ext']), None)
+
+            
  
     except Exception as e:
         print(f"Erreur : {e}")

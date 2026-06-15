@@ -11,7 +11,11 @@
     <nav>
         <div class="nav-content">
             <span class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt=""> SoccerVisualizer</span>
+            <div class="search-container">
+                    <input type="text" id="searchInput" placeholder=" Rechercher une équipe" class="search-input" onkeyup="searchMatch()">
+                </div>
             <div class="nav-links">
+                
                 <a href="/" class="nav-item active">Home</a>
             </div>
         </div>
@@ -109,6 +113,18 @@
 
             document.querySelectorAll('.match-card').forEach(card => {
                 if (league === 'all' || card.dataset.league === league) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+        function searchMatch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            document.querySelectorAll('.match-card').forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(query)) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';

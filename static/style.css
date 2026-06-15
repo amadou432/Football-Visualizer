@@ -546,3 +546,27 @@ h1 {
     color: var(--accent);
     font-weight: 700;
 }
+/* barre de recherche */
+.search-container {
+    max-width: 1100px;
+    margin: 1rem auto 0;
+    padding: 0 20px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #334155;
+    background: var(--card-bg);
+    color: var(--text-main);
+    font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: 0.3s;
+}
+
+.search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
