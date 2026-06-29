@@ -43,6 +43,19 @@ def recup_forme_equipe():
     return forme.data
  
  
+def recup_ratio_but_min():
+    ratio = supabase.table("ratio_but_min").select(
+        "id, id_equipe, "
+        "joueur_1_nom, joueur_1_buts, joueur_1_minutes, joueur_1_ratio, joueur_1_photo, "
+        "joueur_2_nom, joueur_2_buts, joueur_2_minutes, joueur_2_ratio, joueur_2_photo, "
+        "joueur_3_nom, joueur_3_buts, joueur_3_minutes, joueur_3_ratio, joueur_3_photo"
+    ).execute()
+    return ratio.data
+
+def recup_compo():
+    compo = supabase.table("composition").select("id_compo, id_match, nom_joueur, nom_equipe, poste").execute()
+    return compo.data
+
 @app.route('/')
 def afficher_matchs_bdd():
     match_bdd = []
@@ -52,7 +65,7 @@ def afficher_matchs_bdd():
     try:
         response = supabase.table("match").select(
             "id_match, date_match, heure, nom_champi, id_equipe_dom, id_equipe_ext"
-        ).gte("date_match", str(date.today())).execute()
+        ).execute()
  
         match_bdd = response.data
         equipes = recup_toutes_equipes()
@@ -76,6 +89,9 @@ def afficher_match(id):
     forme = []
     absents_dom = []
     absents_ext = []
+    ratio_dom = None
+    ratio_ext = None
+   
  
     try:
         response = supabase.table("match").select(
@@ -93,6 +109,7 @@ def afficher_match(id):
  
             forme = recup_forme_equipe()
             absent = recup_absent()
+            ratio_but_min = recup_ratio_but_min()
  
             match['equipe_dom'] = equipes.get(match['id_equipe_dom'], {})
             match['equipe_ext'] = equipes.get(match['id_equipe_ext'], {})
@@ -100,23 +117,48 @@ def afficher_match(id):
  
             match['forme_dom'] = [f for f in forme if f['id_equipe'] == match['id_equipe_dom']][-5:]
             match['forme_ext'] = [f for f in forme if f['id_equipe'] == match['id_equipe_ext']][-5:]
+
  
-            # FIX : variables séparées pour le template
             absents_dom = [a for a in absent if a['id_equipe'] == match['id_equipe_dom']]
             absents_ext = [a for a in absent if a['id_equipe'] == match['id_equipe_ext']]
+
+            match["date_match"] = match["date_match"]
+
+            
+            ratio_but_min = recup_ratio_but_min()
+            ratio_dom = next((r for r in ratio_but_min if r['id_equipe'] == match['id_equipe_dom']), None)
+            ratio_ext = next((r for r in ratio_but_min if r['id_equipe'] == match['id_equipe_ext']), None)
+            
+            
+            # --- AJOUT DU CALCUL RATIO 90 MIN ---
+            def calculer_ratio_90(ratio_obj):
+                if ratio_obj:
+                    # On calcule pour les 3 joueurs (joueur_1, joueur_2, joueur_3)
+                    for i in range(1, 4):
+                        buts = ratio_obj.get(f'joueur_{i}_buts', 0)
+                        minutes = ratio_obj.get(f'joueur_{i}_minutes', 0)
+                        if minutes and minutes > 0:
+                            ratio_obj[f'joueur_{i}_ratio_90'] = round((buts / minutes) * 90, 2)
+                        else:
+                            ratio_obj[f'joueur_{i}_ratio_90'] = 0
+                return ratio_obj
+
+            ratio_dom = calculer_ratio_90(ratio_dom)
+            ratio_ext = calculer_ratio_90(ratio_ext)
+            # ------------------------------------
  
     except Exception as e:
         print(f"Erreur : {e}")
         match = None
  
-    if match is None:
-        return render_template("erreur.html", message=f"Match {id} introuvable."), 404
- 
+    
     return render_template("match.html",
                            match=match,
                            forme=forme,
                            absents_dom=absents_dom,
-                           absents_ext=absents_ext)
+                           absents_ext=absents_ext,
+                           ratio_dom=ratio_dom,
+                           ratio_ext=ratio_ext)
  
  
 if __name__ == '__main__':
