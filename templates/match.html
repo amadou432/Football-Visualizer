@@ -22,10 +22,8 @@
     </nav>
 
     <main class="container">
-        <!-- En-tête du match -->
         <section class="match-hero-card">
-            <div class="league-tag">
-            </div>
+            <div class="league-tag"></div>
             <div class="hero-team">
                 <img src="{{ match.equipe_dom.logo_equipe }}" alt="{{ match.equipe_dom.nom_equipe }}">
                 <h2>{{ match.equipe_dom.nom_equipe }}</h2>
@@ -44,34 +42,31 @@
             </div>
         </section>
 
-        <!-- Section des Cotes -->
         <div class="info-card">
-    <h3>💰 Cotes 1N2</h3>
-    <div class="odds-flex">
-        <div class="odd">
-            <span>1</span>
-            <strong>{{ match.cote.cote_1 if match.cote else 'N/A' }}</strong>
-            <span class="bookmaker">{{ match.cote.bookmaker_1 if match.cote else '' }}</span>
+            <h3>💰 Cotes 1N2</h3>
+            <div class="odds-flex">
+                <div class="odd">
+                    <span>1</span>
+                    <strong>{{ match.cote.cote_1 if match.cote else 'N/A' }}</strong>
+                    <span class="bookmaker">{{ match.cote.bookmaker_1 if match.cote else '' }}</span>
+                </div>
+                <div class="odd">
+                    <span>N</span>
+                    <strong>{{ match.cote.cote_n if match.cote else 'N/A' }}</strong>
+                    <span class="bookmaker">{{ match.cote.bookmaker_n if match.cote else '' }}</span>
+                </div>
+                <div class="odd">
+                    <span>2</span>
+                    <strong>{{ match.cote.cote_2 if match.cote else 'N/A' }}</strong>
+                    <span class="bookmaker">{{ match.cote.bookmaker_2 if match.cote else '' }}</span>
+                </div>
+            </div>
         </div>
-        <div class="odd">
-            <span>N</span>
-            <strong>{{ match.cote.cote_n if match.cote else 'N/A' }}</strong>
-            <span class="bookmaker">{{ match.cote.bookmaker_n if match.cote else '' }}</span>
-        </div>
-        <div class="odd">
-            <span>2</span>
-            <strong>{{ match.cote.cote_2 if match.cote else 'N/A' }}</strong>
-            <span class="bookmaker">{{ match.cote.bookmaker_2 if match.cote else '' }}</span>
-        </div>
-    </div>
-</div>
 
         <div class="details-grid">
-            
             <div class="details-column">
                 <div class="info-card">
                     <h3>🚑 Joueurs Absents</h3>
-                    
                     <span class="absent-team-name">{{ match.equipe_dom.nom_equipe }}</span>
                     <div class="absents-list">
                         {% for j in absents_dom %}
@@ -101,58 +96,97 @@
                         <p class="no-absent">Aucun absent</p>
                         {% endfor %}
                     </div>
+                </div>
 
-                    <div class="divider"></div>
+                <div class="info-card">
+                    <h3>📊 Formes des Equipes</h3>
+                    <p class="form-equipe-label">{{ match.equipe_dom.nom_equipe }}</p>
+                    <div class="form-row">
+                        {% for f in match.forme_dom %}
+                            <div class="form-item">
+                                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
+                                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
 
-                    <h3 class="section-title">📊 Forme Récente</h3>
-                    <div class="form-container">
-                        <div class="form-row">
-                            <span class="form-equipe-label">Dom.</span>
-                            {% for f in forme_dom %}<span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>{% endfor %}
-                        </div>
-                        <div class="form-row">
-                            <span class="form-equipe-label">Ext.</span>
-                            {% for f in forme_ext %}<span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>{% endfor %}
-                        </div>
+                    <p class="form-equipe-label">{{ match.equipe_ext.nom_equipe }}</p>
+                    <div class="form-row">
+                        {% for f in match.forme_ext %}
+                            <div class="form-item">
+                                <span class="badge-f f-{{ f.resultat }}">{{ f.resultat }}</span>
+                                <p class="form-score">{{ f.buts_marques }}-{{ f.buts_encaisses }}</p>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
 
             <div class="details-column">
                 <div class="info-card">
-                    <h3>🎯 Indice de Confiance</h3>
-                    <div class="trust-row">
-                        <span class="team-name">{{ match.equipe_dom.nom_equipe }}</span>
-                        <div class="bar-container">
-                            <div class="bar home" style="width: 72%"></div>
-                        </div>
-                        <span class="val">72%</span>
-                    </div>
-                    <div class="trust-row">
-                        <span class="team-name">{{ match.equipe_ext.nom_equipe }}</span>
-                        <div class="bar-container">
-                            <div class="bar away" style="width: 28%"></div>
-                        </div>
-                        <span class="val">28%</span>
-                    </div>
-                </div>
+                    <h3>⚽ Ratio But par Minute</h3>
 
-                <div class="info-card">
-                    <h3>📈 Radar de Performance</h3>
-                    <canvas id="radarChart"></canvas>
+                    
+                    <!-- Équipe domicile -->
+                    <p class="form-equipe-label">{{ match.equipe_dom.nom_equipe }}</p>
+                    {% if ratio_dom %}
+                    <div class="top3-row">
+                        <div class="top3-joueur">
+                            <span class="top3-rang">🥇</span>
+                            <img src="{{ ratio_dom.joueur_1_photo }}" alt="{{ ratio_dom.joueur_1_nom }}" class="top3-photo" referrerpolicy="no-referrer">
+                            <span class="top3-nom">{{ ratio_dom.joueur_1_nom }}</span>
+                            <span class="top3-ratio">{{ ratio_dom.joueur_1_ratio_90 }}</span>
+                        </div>
+                        <div class="top3-joueur">
+                            <span class="top3-rang">🥈</span>
+                            <img src="{{ ratio_dom.joueur_2_photo }}" alt="{{ ratio_dom.joueur_2_nom }}" class="top3-photo" referrerpolicy="no-referrer">
+                            <span class="top3-nom">{{ ratio_dom.joueur_2_nom }}</span>
+                            <span class="top3-ratio">{{ ratio_dom.joueur_2_ratio_90 }}</span>
+                        </div>
+                        <div class="top3-joueur">
+                            <span class="top3-rang">🥉</span>
+                            <img src="{{ ratio_dom.joueur_3_photo }}" alt="{{ ratio_dom.joueur_3_nom }}" class="top3-photo" referrerpolicy="no-referrer">
+                            <span class="top3-nom">{{ ratio_dom.joueur_3_nom }}</span>
+                            <span class="top3-ratio">{{ ratio_dom.joueur_3_ratio_90 }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="no-absent">Données non disponibles</p>
+                    {% endif %}
+                    
+                    <!-- Équipe extérieure -->
+                    <p class="form-equipe-label">{{ match.equipe_ext.nom_equipe }}</p>
+                    {% if ratio_ext %}
+                    <div class="top3-row">
+                        <div class="top3-joueur">
+                            <span class="top3-rang">🥇</span>
+                            <img src="{{ ratio_ext.joueur_1_photo }}" alt="{{ ratio_ext.joueur_1_nom }}" class="top3-photo" referrerpolicy="no-referrer">
+                            <span class="top3-nom">{{ ratio_ext.joueur_1_nom }}</span>
+                            <span class="top3-ratio">{{ ratio_ext.joueur_1_ratio_90 }}</span>
+                        </div>
+                        <div class="top3-joueur">
+                            <span class="top3-rang">🥈</span>
+                            <img src="{{ ratio_ext.joueur_2_photo }}" alt="{{ ratio_ext.joueur_2_nom }}" class="top3-photo" referrerpolicy="no-referrer">
+                            <span class="top3-nom">{{ ratio_ext.joueur_2_nom }}</span>
+                            <span class="top3-ratio">{{ ratio_ext.joueur_2_ratio_90 }}</span>
+                        </div>
+                        <div class="top3-joueur">
+                            <span class="top3-rang">🥉</span>
+                            <img src="{{ ratio_ext.joueur_3_photo }}" alt="{{ ratio_ext.joueur_3_nom }}" class="top3-photo" referrerpolicy="no-referrer">
+                            <span class="top3-nom">{{ ratio_ext.joueur_3_nom }}</span>
+                            <span class="top3-ratio">{{ ratio_ext.joueur_3_ratio_90 }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="no-absent">Données non disponibles</p>
+                    {% endif %}
                 </div>
             </div>
-
         </div>
 
         <div style="text-align: center; margin-top: 30px;">
             <a href="/" class="back-link">← Revenir à la liste des matchs</a>
         </div>
     </main>
-
-    <script>
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        // Logique Chart.js à venir
-    </script>
 </body>
 </html>
